@@ -1,25 +1,62 @@
 package com.BackEnd.Appointments.Entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import com.fasterxml.jackson.annotation.*;
+import jakarta.persistence.*;
 
 import java.util.List;
 
 @Entity
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id"
+)
+@JsonIdentityReference(alwaysAsId = true)
 public class Employee extends User {
     @ManyToOne
+    @JoinColumn(name = "business_id")
     private Business business;
+    @ManyToMany(fetch = FetchType.EAGER)
+    List<Service> services;
 
     @OneToMany(mappedBy = "employee", fetch = FetchType.EAGER)
-    private List<Appointment> appointments;
+    private List<Booking> bookings;
 
     public Employee() {}
-    public Employee(String name, String email, String password, Business business) {
-        super(name, email, password);
+    public Employee(String name, String email, String password, Business business, String phone) {
+        super(name, email, password, phone);
         this.business = business;
     }
 
-    // Getters and Setters here...
+    public Business getBusiness() {
+        return business;
+    }
+
+    public void setBusiness(Business business) {
+        this.business = business;
+    }
+
+    public List<Service> getServices() {
+        return services;
+    }
+
+    public void setServices(List<Service> services) {
+        this.services = services;
+    }
+
+    public List<Booking> getBookings() {
+        return bookings;
+    }
+
+    public void setBookings(List<Booking> bookings) {
+        this.bookings = bookings;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + "Employee{" +
+                "business=" + business.getName() +
+                ", services=" + services +
+                ", bookings=" + bookings +
+                '}';
+    }
 }
