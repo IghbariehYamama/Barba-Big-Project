@@ -1,11 +1,11 @@
 package com.BackEnd.Appointments.Entities;
 
-import com.BackEnd.Appointments.Status.BookingStatus;
+import com.BackEnd.Appointments.Enums.BookingStatus;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Future;
 
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 
 @Entity
 @Table(name="bookings")
@@ -31,6 +31,7 @@ public class Booking {
     @JoinColumn(name = "customer_id")
     private Customer customer;
     @Column(name = "chosen_booking_time")
+    @Future(message = "Date of Chosen Booking Time must be in the future.")
     private LocalDateTime chosenBookingTime;
     @Column(name = "cancellation_timestamp")
     private LocalDateTime cancellationTimestamp;
@@ -89,11 +90,12 @@ public class Booking {
         this.customer = customer;
     }
 
-    public LocalDateTime getChosenBookingTime() {
+
+    public @Future(message = "Date of Chosen Booking Time must be in the future.") LocalDateTime getChosenBookingTime() {
         return chosenBookingTime;
     }
 
-    public void setChosenBookingTime(LocalDateTime chosenBookingTime) {
+    public void setChosenBookingTime(@Future(message = "Date of Chosen Booking Time must be in the future.") LocalDateTime chosenBookingTime) {
         this.chosenBookingTime = chosenBookingTime;
     }
 

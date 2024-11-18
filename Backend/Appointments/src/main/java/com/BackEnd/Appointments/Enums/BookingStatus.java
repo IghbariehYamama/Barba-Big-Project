@@ -1,4 +1,4 @@
-package com.BackEnd.Appointments.Status;
+package com.BackEnd.Appointments.Enums;
 
 public enum BookingStatus {
     CANCELLED,          // The booking was cancelled

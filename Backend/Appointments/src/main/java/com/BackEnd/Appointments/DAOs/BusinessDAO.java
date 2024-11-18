@@ -12,7 +12,6 @@ public interface BusinessDAO extends JpaRepository<Business, Integer> {
     //find
     Business findById(int id);
     Business findByName(String name);
-    //Business findByServiceId(int id);
     List<Business> findAll();
 
 }

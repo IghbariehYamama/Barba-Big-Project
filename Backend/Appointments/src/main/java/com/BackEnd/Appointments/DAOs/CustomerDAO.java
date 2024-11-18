@@ -16,5 +16,4 @@ public interface CustomerDAO extends JpaRepository<Customer, Integer> {
     Customer findById(int id);
     //Customer findCustomerByBookingId(int bookingId);
     List<Customer> findAll();
-
 }

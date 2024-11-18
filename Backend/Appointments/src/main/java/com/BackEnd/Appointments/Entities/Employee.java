@@ -1,8 +1,11 @@
 package com.BackEnd.Appointments.Entities;
 
+import com.BackEnd.Appointments.Enums.Gender;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -22,8 +25,9 @@ public class Employee extends User {
     private List<Booking> bookings;
 
     public Employee() {}
-    public Employee(String name, String email, String password, Business business, String phone) {
-        super(name, email, password, phone);
+    //UPDATE
+    public Employee(String name, String email, String password, Business business, String phone, LocalDate dateOfBirth, Gender gender) {
+        super(name, email, password, phone, dateOfBirth, gender);
         this.business = business;
     }
 

@@ -1,6 +1,6 @@
 package com.BackEnd.Appointments.DTOs;
 
-import com.BackEnd.Appointments.Status.BookingStatus;
+import com.BackEnd.Appointments.Enums.BookingStatus;
 
 // BookingDTO.java
 public class BookingDTO {

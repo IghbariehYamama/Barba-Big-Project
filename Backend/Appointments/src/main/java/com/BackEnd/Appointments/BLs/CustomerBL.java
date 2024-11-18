@@ -6,6 +6,7 @@ import com.BackEnd.Appointments.Entities.Booking;
 import com.BackEnd.Appointments.Entities.Customer;
 import com.BackEnd.Appointments.Exceptions.CustomerAlreadyExistException;
 import com.BackEnd.Appointments.Exceptions.CustomerNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
@@ -30,9 +31,6 @@ public class CustomerBL {
         return customer;
     }
     public Customer addCustomer(Customer customer) throws CustomerAlreadyExistException {
-        if(customer.getId() != null) {
-            throw new CustomerAlreadyExistException(customer.getId());
-        }
         return this.customerDAO.save(customer);
     }
     public Customer updateCustomer(Customer customer) throws CustomerNotFoundException {
@@ -59,5 +57,12 @@ public class CustomerBL {
     }
     public Booking updateBooking(Booking booking) {
         return this.bookingDAO.save(booking);
+    }
+    public List<Booking> getAllBookings(int customerId) {
+        Customer customer = this.customerDAO.findById(customerId);
+        if(customer == null) {
+            return null;
+        }
+        return this.bookingDAO.findBookingsByCustomerId(customerId);
     }
 }
