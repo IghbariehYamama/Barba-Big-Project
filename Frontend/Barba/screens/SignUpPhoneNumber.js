@@ -1,10 +1,11 @@
 import { View, Text, StyleSheet, ScrollView, Image, Alert, TouchableOpacity, Modal, TouchableWithoutFeedback, FlatList, TextInput } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SIZES, images, appServer } from '../constants';
+import { COLORS, SIZES, images, appServer, icons } from '../constants'
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Checkbox from 'expo-checkbox'
+import Input from '../components/Input'
 
 const isTestMode = true
 
@@ -52,6 +53,7 @@ const SignUpPhoneNumber = ({ navigation }) => {
 
     // Handle sending phone number to API
     const handleSendPhoneNumber = async () => {
+
         if (!phoneNumber) {
             Alert.alert('Error', 'Please enter a valid phone number.');
             return;
@@ -193,7 +195,7 @@ const SignUpPhoneNumber = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.area}>
             <View style={styles.container}>
-                <Header title="Sign Up With Phone Number" showBackButton={false}/>
+                <Header title="Sign Up"/>
                 <ScrollView style={{ marginVertical: 54 }} showsVerticalScrollIndicator={false}>
                     <View style={styles.logoContainer}>
                         <Image source={images.logo} resizeMode="contain" style={styles.logo} />
@@ -204,18 +206,13 @@ const SignUpPhoneNumber = ({ navigation }) => {
                     {!codeSent ? (
                         <>
                             <View style={[styles.inputContainer, { backgroundColor: COLORS.greyscale500 }]}>
-                                <TouchableOpacity style={styles.selectFlagContainer} onPress={() => setModalVisible(true)}>
-                                    <Image source={{ uri: selectedArea?.flag }} contentFit="contain" style={styles.flagIcon} />
-                                    <Text style={{ color: COLORS.black, fontSize: 12, marginLeft: 5 }}>
-                                        {selectedArea?.callingCode}
-                                    </Text>
-                                </TouchableOpacity>
-                                <TextInput
+                                <Input
                                     style={[styles.input, { color: COLORS.black }]}
                                     placeholder="Enter your phone number"
+                                    icon={icons.phoneCall}
                                     placeholderTextColor={COLORS.gray}
                                     keyboardType="numeric"
-                                    onChangeText={setPhoneNumber}
+                                    onInputChanged={(_, text) => setPhoneNumber(text)}
                                 />
                             </View>
                             <Button title="Send Code" filled onPress={handleSendPhoneNumber} style={styles.button} />
@@ -254,7 +251,7 @@ const SignUpPhoneNumber = ({ navigation }) => {
                         color: COLORS.black
                     }]}>Already have an account ?</Text>
                     <TouchableOpacity
-                        onPress={() => navigation.navigate("Login")}>
+                        onPress={() => navigation.navigate("LoginPhoneNumber")}>
                         <Text style={styles.bottomRight}>{" "}Sign In</Text>
                     </TouchableOpacity>
                 </View>

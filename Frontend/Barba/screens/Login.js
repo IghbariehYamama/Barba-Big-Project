@@ -107,7 +107,7 @@ const Login = ({ navigation }) => {
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.privacy, {
                     color: COLORS.black
-                  }]}>Remenber me</Text>
+                  }]}>Remember me</Text>
                 </View>
               </View>
             </View>

@@ -1,10 +1,12 @@
 import { View, Text, StyleSheet, ScrollView, Image, Alert, TouchableOpacity, Modal, TouchableWithoutFeedback, FlatList, TextInput } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SIZES, images, appServer } from '../constants';
+import { COLORS, SIZES, images, appServer, icons } from '../constants'
 import Header from '../components/Header';
 import Button from '../components/Button';
 import { customer } from '../data/index';
+import Input from '../components/Input'
+import { useFocusEffect } from '@react-navigation/native'
 
 const LoginPhoneNumber = ({ navigation }) => {
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -46,6 +48,12 @@ const LoginPhoneNumber = ({ navigation }) => {
             })
     }, [])
 
+    useFocusEffect(
+        useCallback(() => {
+            setCodeSent(false); // Reset state when the screen is revisited
+            return () => {}; // Cleanup function (optional)
+        }, [])
+    );
 
     // Handle sending phone number to API
     const handleSendPhoneNumber = async () => {
@@ -57,6 +65,7 @@ const LoginPhoneNumber = ({ navigation }) => {
         const fullPhoneNumber = `${selectedArea.callingCode}${phoneNumber}`;
         try {
             // Check if phone number exists
+
             const checkResponse = await fetch(`https://${appServer.serverName}/customers/signIn/phone`, {
                 method: 'POST',
                 headers: {
@@ -69,6 +78,7 @@ const LoginPhoneNumber = ({ navigation }) => {
                 return;
             }
             Alert.alert('Success', checkResponse.body);
+
             setCodeSent(true);
             navigation.navigate("OTPVerification", { phoneNumber: phoneNumber, login: true });
 
@@ -190,7 +200,7 @@ const LoginPhoneNumber = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.area}>
             <View style={styles.container}>
-                <Header title="Login With Phone Number" />
+                <Header title="Login" />
                 <ScrollView style={{ marginVertical: 54 }} showsVerticalScrollIndicator={false}>
                     <View style={styles.logoContainer}>
                         <Image source={images.logo} resizeMode="contain" style={styles.logo} />
@@ -201,28 +211,24 @@ const LoginPhoneNumber = ({ navigation }) => {
                     {!codeSent ? (
                         <>
                             <View style={[styles.inputContainer, { backgroundColor: COLORS.greyscale500 }]}>
-                                <TouchableOpacity style={styles.selectFlagContainer} onPress={() => setModalVisible(true)}>
-                                    <Image source={{ uri: selectedArea?.flag }} contentFit="contain" style={styles.flagIcon} />
-                                    <Text style={{ color: COLORS.black, fontSize: 12, marginLeft: 5 }}>
-                                        {selectedArea?.callingCode}
-                                    </Text>
-                                </TouchableOpacity>
-                                <TextInput
+                                <Input
                                     style={[styles.input, { color: COLORS.black }]}
                                     placeholder="Enter your phone number"
                                     placeholderTextColor={COLORS.gray}
+                                    icon={icons.phoneCall}
                                     keyboardType="numeric"
-                                    onChangeText={setPhoneNumber}
+                                    onInputChanged={(_, text) => setPhoneNumber(text)}
                                 />
                             </View>
                             <Button title="Send Code" filled onPress={handleSendPhoneNumber} style={styles.button} />
                         </>
                     ) : (
                         <>
-                            <TextInput
+                            <Input
                                 style={[styles.input, { color: COLORS.black, marginVertical: 16 }]}
                                 placeholder="Enter the verification code"
                                 placeholderTextColor={COLORS.gray}
+                                icon={icons.email}
                                 keyboardType="numeric"
                                 onChangeText={setVerificationCode}
                             />
@@ -231,6 +237,16 @@ const LoginPhoneNumber = ({ navigation }) => {
                     )}
                 </ScrollView>
                 {RenderAreasCodesModal()}
+            </View>
+
+            <View style={styles.bottomContainer}>
+                <Text style={[styles.bottomLeft, {
+                    color: COLORS.black
+                }]}>Don't have an account?</Text>
+                <TouchableOpacity
+                    onPress={() => navigation.navigate("SignUpPhoneNumber")}>
+                    <Text style={styles.bottomRight}>{" "}Sign Up</Text>
+                </TouchableOpacity>
             </View>
         </SafeAreaView>
 
@@ -300,16 +316,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
     },
-    bottomContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        marginVertical: 18,
-        position: "absolute",
-        bottom: 12,
-        right: 0,
-        left: 0,
-    },
     bottomLeft: {
         fontSize: 14,
         fontFamily: "regular",
@@ -364,7 +370,26 @@ const styles = StyleSheet.create({
         height: 40,
         fontSize: 14,
         color: "#111"
-    }
+    },
+    bottomContainer: {
+        position: "absolute",
+        bottom: 32,
+        left: 0,
+        right: 0,
+        alignItems: "center",
+    },
+    bottomTitle: {
+        fontSize: 12,
+        fontFamily: "regular",
+        color: COLORS.black,
+    },
+    bottomSubtitle: {
+        fontSize: 12,
+        fontFamily: "regular",
+        color: COLORS.black,
+        textDecorationLine: "underline",
+        marginTop: 2,
+    },
 });
 
 export default LoginPhoneNumber;

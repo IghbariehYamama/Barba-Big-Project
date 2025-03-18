@@ -5,6 +5,7 @@ import UpcomingBookings from './UpcomingBookings';
 import CompletedBookings from './CompletedBookings';
 import CancelledBookings from './CancelledBookings';
 import { customer } from '../data'
+import {upcomingBookings} from '../data/index'
 
 
 const TabContent = ({ tab, bookings }) => {
@@ -14,17 +15,17 @@ const TabContent = ({ tab, bookings }) => {
     switch (tab) {
         case 'Upcoming':
             filteredBookings = bookings.filter(
-                (booking) => booking.status === 'upcoming'
+                (booking) => booking.status === 'UPCOMING'
             );
             return <UpcomingBookings bookings={filteredBookings} />;
         case 'Completed':
             filteredBookings = bookings.filter(
-                (booking) => booking.status === 'completed'
+                (booking) => booking.status === 'COMPLETED'
             );
             return <CompletedBookings bookings={filteredBookings} />;
         case 'Cancelled':
             filteredBookings = bookings.filter(
-                (booking) => booking.status === 'cancelled'
+                (booking) => booking.status === 'CANCELLED'
             );
             return <CancelledBookings bookings={filteredBookings} />;
         default:
@@ -50,7 +51,6 @@ const BookingTabSelection = () => {
                         },
                     }
                 );
-
                 if (response.ok) {
                     const data = await response.json();
                     console.log(data);

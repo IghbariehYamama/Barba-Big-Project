@@ -343,17 +343,18 @@ const FillYourProfile = ({ route, navigation }) => {
               if (selected <= today) {
                 handleDateChange(date); // Valid date
               } else {
-                Alert.alert("Invalid Date", "You cannot select a future date."); // Handle invalid date
+                Alert.alert("Invalid Date", "You cannot select a future date."); // Prevent future selection
               }
             }}
-            maximumDate={getFormatedDate(new Date(), 'YYYY/MM/DD')} // Prevent future dates
+            minimumDate={getFormatedDate(new Date('1900/01/01'), 'YYYY/MM/DD')} // Set min date
+            maximumDate={getFormatedDate(new Date(), 'YYYY/MM/DD')} // Disable future dates
             options={{
               textHeaderColor: COLORS.primary,
               textSecondaryColor: COLORS.gray,
               mainColor: COLORS.primary,
               textDisabledColor: COLORS.lightGray, // Style for disabled dates
             }}
-            mode="calendar" // Ensure it's in calendar mode
+            mode="calendar"
             customDatesStyles={(date) => {
               const today = new Date();
               const selectedDate = new Date(date);
@@ -361,13 +362,12 @@ const FillYourProfile = ({ route, navigation }) => {
               if (selectedDate > today) {
                 return {
                   textStyle: { color: COLORS.lightGray }, // Grey out future dates
-                  disabled: true, // Prevent future dates from being selectable
+                  disabled: true, // Make future dates unselectable
                 };
               }
               return {};
             }}
         />
-
 
 
 

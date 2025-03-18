@@ -147,7 +147,12 @@ const BookAppointment = ({ navigation }) => {
               title="Continue"
               filled
               style={styles.button}
-              onPress={() => navigation.navigate("ReviewSummary")}
+              onPress={() =>
+                  navigation.navigate("ReviewSummary", {
+                    date: selectedDate,
+                    time: selectedHour,
+                  })
+              }
           />
         </View>
       </SafeAreaView>
