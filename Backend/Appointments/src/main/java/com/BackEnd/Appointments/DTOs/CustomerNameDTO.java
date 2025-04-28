@@ -1,5 +1,10 @@
 package com.BackEnd.Appointments.DTOs;
 
+import com.BackEnd.Appointments.Entities.Customer;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class CustomerNameDTO {
     private Integer id;
     private String name;
@@ -10,6 +15,17 @@ public class CustomerNameDTO {
     public CustomerNameDTO(Integer id, String name) {
         this.id = id;
         this.name = name;
+    }
+    public CustomerNameDTO(Customer customer) {
+        this.id = customer.getId();
+        this.name = customer.getName();
+    }
+    public static List<CustomerNameDTO> toDTO(List<Customer> customerList) {
+        List<CustomerNameDTO> customerNameDTOList = new ArrayList<>();
+        for (Customer customer : customerList) {
+            customerNameDTOList.add(new CustomerNameDTO(customer.getId(), customer.getName()));
+        }
+        return customerNameDTOList;
     }
 
     public Integer getId() {

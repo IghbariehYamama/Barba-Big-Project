@@ -1,5 +1,10 @@
 package com.BackEnd.Appointments.DTOs;
 
+import com.BackEnd.Appointments.Entities.Business;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class BusinessNameDTO {
     private Integer id;
     private String name;
@@ -10,6 +15,17 @@ public class BusinessNameDTO {
     public BusinessNameDTO(Integer id, String name) {
         this.id = id;
         this.name = name;
+    }
+    public BusinessNameDTO(Business business) {
+        this.id = business.getId();
+        this.name = business.getName();
+    }
+    public static List<BusinessNameDTO> toDTO(List<Business> businesses) {
+        List<BusinessNameDTO> dtos = new ArrayList<BusinessNameDTO>();
+        for (Business business : businesses) {
+            dtos.add(new BusinessNameDTO(business));
+        }
+        return dtos;
     }
 
     public Integer getId() {

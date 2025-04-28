@@ -21,6 +21,8 @@ public class Customer extends User {
 
     @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER)
     private List<Booking> bookings;
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<Bookmark> bookmarks;
 
     public Customer() {}
     public Customer(String name, String email, String password, String phone, LocalDate dateOfBirth, Gender gender) {
@@ -33,6 +35,14 @@ public class Customer extends User {
 
     public void setBookings(List<Booking> bookings) {
         this.bookings = bookings;
+    }
+
+    public List<Bookmark> getBookmarks() {
+        return bookmarks;
+    }
+
+    public void setBookmarks(List<Bookmark> bookmarks) {
+        this.bookmarks = bookmarks;
     }
 
     @Override
