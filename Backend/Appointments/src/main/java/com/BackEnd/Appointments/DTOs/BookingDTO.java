@@ -1,10 +1,13 @@
 package com.BackEnd.Appointments.DTOs;
 
+import com.BackEnd.Appointments.Entities.Booking;
 import com.BackEnd.Appointments.Enums.BookingStatus;
+
+import java.util.ArrayList;
+import java.util.List;
 
 // BookingDTO.java
 public class BookingDTO {
-    private Integer id;
     private Integer businessId;
     private Integer serviceId;
     private Integer customerId;
@@ -14,11 +17,40 @@ public class BookingDTO {
     private int day;
     private int month;
     private int year;
-    private BookingStatus status;
 
-    // Getters and setters
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public BookingDTO() {
+    }
+
+    public BookingDTO(Integer businessId, Integer serviceId, Integer customerId, Integer employeeId, int hour, int minute, int day, int month, int year) {
+        this.businessId = businessId;
+        this.serviceId = serviceId;
+        this.customerId = customerId;
+        this.employeeId = employeeId;
+        this.hour = hour;
+        this.minute = minute;
+        this.day = day;
+        this.month = month;
+        this.year = year;
+    }
+
+    public BookingDTO(Booking booking) {
+        this.businessId = booking.getBusiness().getId();
+        this.serviceId = booking.getService().getId();
+        this.customerId = booking.getCustomer().getId();
+        this.employeeId = booking.getEmployee().getId();
+        this.hour = booking.getChosenBookingTime().getHour();
+        this.minute = booking.getChosenBookingTime().getMinute();
+        this.day = booking.getChosenBookingTime().getDayOfMonth();
+        this.month = booking.getChosenBookingTime().getMonthValue();
+        this.year = booking.getChosenBookingTime().getYear();
+    }
+    public static List<BookingDTO> toDTO(List<Booking> bookings) {
+        List<BookingDTO> dtos = new ArrayList<>();
+        for (Booking booking : bookings) {
+            dtos.add(new BookingDTO(booking));
+        }
+        return dtos;
+    }
 
     public Integer getBusinessId() { return businessId; }
     public void setBusinessId(Integer businessId) { this.businessId = businessId; }
@@ -69,8 +101,6 @@ public class BookingDTO {
         this.year = year;
     }
 
-    public BookingStatus getStatus() { return status; }
-    public void setStatus(BookingStatus status) { this.status = status; }
     public Integer getEmployeeId() { return employeeId;
     }
 

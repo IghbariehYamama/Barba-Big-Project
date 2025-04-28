@@ -1,6 +1,7 @@
 package com.BackEnd.Appointments.Entities;
 
 import com.BackEnd.Appointments.Enums.Gender;
+import com.BackEnd.Appointments.Utils.PasswordUtils;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -18,15 +19,18 @@ public abstract class User {
     private Integer id;
 
     @NotBlank(message = "Name cannot be blank.")
-    @Pattern(regexp = "^[A-Za-z\\s]+$", message = "Name must contain only letters and spaces.")
+    @Pattern(
+            regexp = "^([A-Za-z\\s]+|[\u0590-\u05FF\\s]+|[\u0600-\u06FF\\s]+)$",
+            message = "Name must contain only letters and spaces in one language (English, Hebrew, or Arabic)."
+    )
     private String name;
-    @NotBlank(message = "Email cannot be blank.")
+    @Column(unique = true)
     @Email(message = "Email should be valid.")
     private String email;
     @NotBlank(message = "Password cannot be blank.")
-    @Size(min = 8, max = 20, message = "Password must be between 8 and 20 characters.")
     private String password;
-    @NotBlank(message = "Phone number cannot be blank.")
+    @Column(unique = true)
+    @NotBlank(message = "Phone cannot be blank.")
     @Pattern(regexp = "05[0-9]{8}", message = "Phone number must start with '05' and contain 10 digits.")
     private String phone;
     @Past(message = "Date of birth must be in the past.")
@@ -48,7 +52,8 @@ public abstract class User {
     public User(String name, String email, String password, String phone, LocalDate dateOfBirth, Gender gender) {
         this.name = name;
         this.email = email;
-        this.password = password;
+        this.password = PasswordUtils.hashPassword(password);
+        this.password = PasswordUtils.hashPassword(password);
         this.phone = phone;
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
@@ -62,20 +67,42 @@ public abstract class User {
         this.id = id;
     }
 
-    public String getName() {
+    public @NotBlank(message = "Name cannot be blank.") @Pattern(
+            regexp = "^([A-Za-z\\s]+|[\u0590-\u05FF\\s]+|[\u0600-\u06FF\\s]+)$",
+            message = "Name must contain only letters and spaces in one language (English, Hebrew, or Arabic)."
+    ) String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotBlank(message = "Name cannot be blank.") @Pattern(
+            regexp = "^([A-Za-z\\s]+|[\u0590-\u05FF\\s]+|[\u0600-\u06FF\\s]+)$",
+            message = "Name must contain only letters and spaces in one language (English, Hebrew, or Arabic)."
+    ) String name) {
         this.name = name;
     }
 
-    public String getEmail() {
+    public @Email(message = "Email should be valid.") String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(@Email(message = "Email should be valid.") String email) {
         this.email = email;
+    }
+
+    public @NotBlank(message = "Password cannot be blank.") String getPassword() {
+        return password;
+    }
+
+    public void setPassword(@NotBlank(message = "Password cannot be blank.") String password) {
+        this.password = PasswordUtils.hashPassword(password);
+    }
+
+    public @NotBlank(message = "Phone cannot be blank.") @Pattern(regexp = "05[0-9]{8}", message = "Phone number must start with '05' and contain 10 digits.") String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(@NotBlank(message = "Phone cannot be blank.") @Pattern(regexp = "05[0-9]{8}", message = "Phone number must start with '05' and contain 10 digits.") String phone) {
+        this.phone = phone;
     }
 
     public @Past(message = "Date of birth must be in the past.") LocalDate getDateOfBirth() {
@@ -92,22 +119,6 @@ public abstract class User {
 
     public void setGender(@NotNull(message = "Gender cannot be null.") Gender gender) {
         this.gender = gender;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
     }
 
     @Override

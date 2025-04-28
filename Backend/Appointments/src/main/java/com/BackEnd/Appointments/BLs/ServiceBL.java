@@ -1,6 +1,7 @@
 package com.BackEnd.Appointments.BLs;
 
 import com.BackEnd.Appointments.DAOs.ServiceDAO;
+import com.BackEnd.Appointments.Entities.Business;
 import com.BackEnd.Appointments.Entities.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -32,6 +33,9 @@ public class ServiceBL {
     }
     public void deleteService(int id) {
         this.serviceDAO.deleteById(id);
+    }
+    public List<Service> getServicesByBusinessId(Integer businessId) {
+        return serviceDAO.findAllByBusinessId(businessId);
     }
 
 

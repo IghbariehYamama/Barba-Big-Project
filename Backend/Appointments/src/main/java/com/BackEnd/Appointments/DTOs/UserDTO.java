@@ -1,5 +1,7 @@
 package com.BackEnd.Appointments.DTOs;
 
+import com.BackEnd.Appointments.Annotations.AtLeastOneField;
+import com.BackEnd.Appointments.Entities.User;
 import com.BackEnd.Appointments.Enums.Gender;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -9,15 +11,17 @@ import java.time.LocalDate;
 
 public class UserDTO {
     @NotBlank(message = "Name cannot be blank.")
-    @Pattern(regexp = "^[A-Za-z\\s]+$", message = "Name must contain only letters and spaces.")
+    @Pattern(
+            regexp = "^([A-Za-z\\s]+|[\u0590-\u05FF\\s]+|[\u0600-\u06FF\\s]+)$",
+            message = "Name must contain only letters and spaces in one language (English, Hebrew, or Arabic)."
+    )
     private String name;
-    @NotBlank(message = "Email cannot be blank.")
     @Email(message = "Email should be valid.")
     private String email;
     @NotBlank(message = "Password cannot be blank.")
     @Size(min = 8, max = 20, message = "Password must be between 8 and 20 characters.")
     private String password;
-    @NotBlank(message = "Phone number cannot be blank.")
+    @NotBlank(message = "Phone Number cannot be blank.")
     @Pattern(regexp = "05[0-9]{8}", message = "Phone number must start with '05' and contain 10 digits.")
     private String phone;
     @Past(message = "Date of birth must be in the past.")
@@ -37,20 +41,34 @@ public class UserDTO {
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
     }
+    public UserDTO(User user) {
+        this.email = user.getEmail();
+        this.name = user.getName();
+        this.password = user.getPassword();
+        this.phone = user.getPhone();
+        this.dateOfBirth = user.getDateOfBirth();
+        this.gender = user.getGender();
+    }
 
-    public @NotBlank(message = "Name cannot be blank.") @Pattern(regexp = "^[A-Za-z\\s]+$", message = "Name must contain only letters and spaces.") String getName() {
+    public @NotBlank(message = "Name cannot be blank.") @Pattern(
+            regexp = "^([A-Za-z\\s]+|[\u0590-\u05FF\\s]+|[\u0600-\u06FF\\s]+)$",
+            message = "Name must contain only letters and spaces in one language (English, Hebrew, or Arabic)."
+    ) String getName() {
         return name;
     }
 
-    public void setName(@NotBlank(message = "Name cannot be blank.") @Pattern(regexp = "^[A-Za-z\\s]+$", message = "Name must contain only letters and spaces.") String name) {
+    public void setName(@NotBlank(message = "Name cannot be blank.") @Pattern(
+            regexp = "^([A-Za-z\\s]+|[\u0590-\u05FF\\s]+|[\u0600-\u06FF\\s]+)$",
+            message = "Name must contain only letters and spaces in one language (English, Hebrew, or Arabic)."
+    ) String name) {
         this.name = name;
     }
 
-    public @NotBlank(message = "Email cannot be blank.") @Email(message = "Email should be valid.") String getEmail() {
+    public @Email(message = "Email should be valid.") String getEmail() {
         return email;
     }
 
-    public void setEmail(@NotBlank(message = "Email cannot be blank.") @Email(message = "Email should be valid.") String email) {
+    public void setEmail(@Email(message = "Email should be valid.") String email) {
         this.email = email;
     }
 
@@ -62,11 +80,11 @@ public class UserDTO {
         this.password = password;
     }
 
-    public @NotBlank(message = "Phone number cannot be blank.") @Pattern(regexp = "05[0-9]{8}", message = "Phone number must start with '05' and contain 10 digits.") String getPhone() {
+    public @NotBlank(message = "Phone Number cannot be blank.") @Pattern(regexp = "05[0-9]{8}", message = "Phone number must start with '05' and contain 10 digits.") String getPhone() {
         return phone;
     }
 
-    public void setPhone(@NotBlank(message = "Phone number cannot be blank.") @Pattern(regexp = "05[0-9]{8}", message = "Phone number must start with '05' and contain 10 digits.") String phone) {
+    public void setPhone(@NotBlank(message = "Phone Number cannot be blank.") @Pattern(regexp = "05[0-9]{8}", message = "Phone number must start with '05' and contain 10 digits.") String phone) {
         this.phone = phone;
     }
 

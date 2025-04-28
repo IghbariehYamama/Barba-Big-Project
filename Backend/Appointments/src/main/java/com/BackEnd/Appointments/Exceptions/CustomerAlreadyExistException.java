@@ -8,4 +8,7 @@ public class CustomerAlreadyExistException extends Exception{
     public CustomerAlreadyExistException(int id){
         super("Customer "+ id +" is Already Exist");
     }
+    public CustomerAlreadyExistException(String message){
+        super(message);
+    }
 }

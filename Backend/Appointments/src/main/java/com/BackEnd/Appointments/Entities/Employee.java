@@ -18,11 +18,14 @@ public class Employee extends User {
     @ManyToOne
     @JoinColumn(name = "business_id")
     private Business business;
-    @ManyToMany(fetch = FetchType.EAGER)
-    List<Service> services;
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<EmployeeService> employeeServices;
 
     @OneToMany(mappedBy = "employee", fetch = FetchType.EAGER)
-    private List<Booking> bookings;
+    private List<BaseBooking> bookings;
+    @OneToMany(mappedBy = "employee", fetch = FetchType.EAGER)
+    private List<AvailableSlot> availableSlots;
+
 
     public Employee() {}
     //UPDATE
@@ -39,27 +42,32 @@ public class Employee extends User {
         this.business = business;
     }
 
-    public List<Service> getServices() {
-        return services;
-    }
-
-    public void setServices(List<Service> services) {
-        this.services = services;
-    }
-
-    public List<Booking> getBookings() {
+    public List<BaseBooking> getBookings() {
         return bookings;
     }
+    public List<AvailableSlot> getAvailableSlots() {
+        return availableSlots;
+    }
 
-    public void setBookings(List<Booking> bookings) {
+    public void setAvailableSlots(List<AvailableSlot> availableSlots) {
+        this.availableSlots = availableSlots;
+    }
+    public void setBookings(List<BaseBooking> bookings) {
         this.bookings = bookings;
+    }
+
+    public List<EmployeeService> getEmployeeServices() {
+        return employeeServices;
+    }
+
+    public void setEmployeeServices(List<EmployeeService> employeeServices) {
+        this.employeeServices = employeeServices;
     }
 
     @Override
     public String toString() {
         return super.toString() + "Employee{" +
                 "business=" + business.getName() +
-                ", services=" + services +
                 ", bookings=" + bookings +
                 '}';
     }
