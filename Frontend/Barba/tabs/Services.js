@@ -6,9 +6,9 @@ import { services } from '../data';
 import ServiceCard from '../components/ServiceCard';
 import { useNavigation } from '@react-navigation/native';
 
-const Services = () => {
+const Services = ({ salonID }) => {
   const navigation = useNavigation();
-
+  console.log("Services: " + salonID)
   return (
     <View style={[styles.container, {
       backgroundColor: COLORS.tertiaryWhite
@@ -16,7 +16,7 @@ const Services = () => {
       <SubHeaderItem
         title="Our Services"
         navTitle="See All"
-        onPress={() => navigation.navigate("OurServices")}
+        onPress={() => navigation.navigate("OurServices", { salonID: salonID })}
       />
       <View style={[styles.separateLine, {
         backgroundColor: COLORS.grayscale200

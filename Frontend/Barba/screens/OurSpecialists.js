@@ -6,11 +6,12 @@ import { ScrollView } from 'react-native-virtualized-view';
 import { specialists } from '../data';
 import SpecialistMessageCard from '../components/SpecialistMessageCard';
 
-const OurSpecialists = ({ navigation }) => {
+const OurSpecialists = ({ route, navigation }) => {
     /**
      * 
     * Render header
     */
+    const employees = route.params.employees;
     const renderHeader = () => {
        return (
            <View style={styles.headerContainer}>
@@ -50,13 +51,14 @@ const OurSpecialists = ({ navigation }) => {
     return (
         <View style={{ marginVertical: 22  }}>
             <FlatList
-                  data={specialists}
+                  data={employees}
                   keyExtractor={item=>item.id}
                   renderItem={({ item }) => (
                     <SpecialistMessageCard
                       name={item.name}
                       position={item.position}
-                      avatar={item.avatar}/>
+                      employeeId={item.id}
+                    />
                   )}
                 />
         </View>

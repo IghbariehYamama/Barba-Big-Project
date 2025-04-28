@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react'
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { COLORS } from '../constants';
+import { appServer, COLORS } from '../constants'
+import { SalonContext } from './SalonContext'
 
-const SpecialistCard = ({ id, name, avatar, position, onPress, isSelected }) => {
-
+const SpecialistCard = ({ id, name, position, onPress, isSelected }) => {
+  const { salonID } = useContext(SalonContext);
   const handlePress = () => {
     onPress(id);
   };
@@ -14,7 +15,7 @@ const SpecialistCard = ({ id, name, avatar, position, onPress, isSelected }) => 
         backgroundColor: COLORS.white,
       }]}>
         <Image
-          source={avatar}
+            source={{uri: `https://${appServer.serverName}/businesses/photos/${salonID}/employees/${id}`}}
           resizeMode='contain'
           style={styles.avatar}
         />

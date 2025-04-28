@@ -79,15 +79,15 @@ const AboutUs = () => {
                     customMapStyle={mapStandardStyle }
                     userInterfaceStyle="dark"
                     initialRegion={{
-                        latitude: 48.8566,
-                        longitude: 2.3522,
+                        latitude: 32.51833126,
+                        longitude: 35.152166058,
                         latitudeDelta: 0.0922,
                         longitudeDelta: 0.0421,
                     }}>
                     <Marker
                         coordinate={{
-                            latitude: 48.8566,
-                            longitude: 2.3522,
+                            latitude: 32.51833126,
+                            longitude: 35.152166058,
                         }}
                         image={icons.mapsOutline}
                         title="Move"

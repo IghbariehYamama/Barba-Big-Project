@@ -13,6 +13,7 @@ import DatePickerModal from '../components/DatePickerModal';
 import Button from '../components/Button';
 import RNPickerSelect from 'react-native-picker-select';
 import { customer } from '../data'
+import { Calendar } from 'react-native-calendars'
 
 const isTestMode = true;
 
@@ -293,12 +294,39 @@ const EditProfile = ({ navigation }) => {
           </View>
         </ScrollView>
       </View>
-      <DatePickerModal
+      {/*<DatePickerModal
         open={openStartDatePicker}
         startDate={startDate}
         selectedDate={startedDate}
         onClose={() => setOpenStartDatePicker(false)}
         onChangeStartDate={(date) => setStartedDate(date)}
+      />*/}
+      <Calendar
+          onDayPress={onDayPress}
+          markingType={'simple'}
+          markedDates={markedDates}
+          style={{
+            backgroundColor: COLORS.primary,
+            marginVertical: 16,
+            borderRadius: 12,
+            height: 360,
+          }}
+          theme={{
+            backgroundColor: COLORS.primary,
+            calendarBackground: COLORS.primary,
+            textSectionTitleColor: COLORS.white,
+            selectedDayBackgroundColor: COLORS.white,
+            selectedDayTextColor: COLORS.primary,
+            todayTextColor: COLORS.white,
+            dayTextColor: COLORS.white,
+            textDisabledColor: '#bdbdbd',
+            monthTextColor: COLORS.white,
+            indicatorColor: COLORS.white,
+            textDayFontWeight: '300',
+            textMonthFontWeight: 'bold',
+            textDayHeaderFontWeight: '300',
+            arrowColor: COLORS.white,
+          }}
       />
       {RenderAreasCodesModal()}
       <View style={styles.bottomContainer}>

@@ -1,9 +1,10 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
-import React from 'react';
-import { COLORS, SIZES, icons } from '../constants';
+import React, { useContext, useEffect, useState } from 'react'
+import { COLORS, SIZES, icons, appServer } from '../constants'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native-virtualized-view';
-import { ourGallery } from '../data';
+import { SalonContext } from '../components/SalonContext'
+import { agendaDayNumColor } from 'react-native-calendars/src/style'
 
 const numColumns = 3;
 const screenWidth = SIZES.width - 48;
@@ -13,6 +14,32 @@ const SalonDetailsGallery = ({ navigation }) => {
      /**
      * Render header
      */
+    const [ourGallery, setOurGallery] = useState([]);
+    const { salonID } = useContext(SalonContext);
+
+    useEffect(() => {
+        const fetchOurGallery = async () => {
+            try {
+                const response = await fetch(`https://${appServer.serverName}/businesses/photos/${salonID}/gallery/urls`);
+                const data = await response.json();
+                console.log("data: " + data)
+                console.log("salonID: " + salonID)
+                if (Array.isArray(data)) {
+                    const fullUrls = data.map(path => `https://${appServer.serverName}${path}`);
+                    setOurGallery(fullUrls);
+                } else {
+                    console.warn("Unexpected data format for slider images:", data);
+                    setOurGallery([]);
+                }
+            } catch (error) {
+                console.error("Error fetching slider images:", error);
+            }
+        };
+        if (salonID) {
+            fetchOurGallery();
+        }
+    }, [salonID]);
+
      const renderHeader = () => {
         return (
             <View style={styles.headerContainer}>
@@ -52,7 +79,7 @@ const SalonDetailsGallery = ({ navigation }) => {
   const renderContent = ()=>{
 
     const renderItem = ({ item }) => (
-        <Image source={item} style={styles.image} />
+        <Image source={{uri: item}} style={styles.image} />
     );
 
     return (

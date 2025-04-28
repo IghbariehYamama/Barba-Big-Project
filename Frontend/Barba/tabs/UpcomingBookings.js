@@ -35,16 +35,13 @@ const UpcomingBookings = ({ bookings }) => {
             text: "Yes, Cancel",
             onPress: async () => {
               try {
-                const response = await fetch(
-                    `https://${appServer.serverName}/customers/bookings/status/update`,
-                    {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ bookingId: bookingId, bookingStatus: "CANCELLED" }),
-                    }
-                );
+                let response = await fetch(`https://${appServer.serverName}/customers/bookings/status/cancel`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify( bookingId ),
+                });
 
                 if (response.ok) {
                   Alert.alert("Success", "Your booking has been successfully canceled.");

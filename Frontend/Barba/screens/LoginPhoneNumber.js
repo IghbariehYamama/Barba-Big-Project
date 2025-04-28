@@ -7,6 +7,7 @@ import Button from '../components/Button';
 import { customer } from '../data/index';
 import Input from '../components/Input'
 import { useFocusEffect } from '@react-navigation/native'
+import { isTestMode } from '../constants/serverAPIS'
 
 const LoginPhoneNumber = ({ navigation }) => {
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -57,12 +58,20 @@ const LoginPhoneNumber = ({ navigation }) => {
 
     // Handle sending phone number to API
     const handleSendPhoneNumber = async () => {
+        console.log("check1");
+        if (isTestMode){
+            console.log("check2");
+            navigation.navigate('Main');
+        }
+        else{
+            console.log("check3");
         if (!phoneNumber) {
+            console.log("check4");
             Alert.alert('Error', 'Please enter a valid phone number.');
             return;
         }
-
-        const fullPhoneNumber = `${selectedArea.callingCode}${phoneNumber}`;
+            console.log("check5");
+        //const fullPhoneNumber = `${selectedArea.callingCode}${phoneNumber}`;
         try {
             // Check if phone number exists
 
@@ -85,7 +94,7 @@ const LoginPhoneNumber = ({ navigation }) => {
         } catch (err) {
             setError(err.message);
         }
-    };
+    }};
 
     // Handle verifying the code
 

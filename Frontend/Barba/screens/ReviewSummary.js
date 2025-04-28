@@ -13,13 +13,17 @@ const ReviewSummary = ({ navigation, route }) => {
 
   const createAppointment = async () => {
     try {
+      let hour = time.slice(0, 2);
+      hour = hour[0] === "0" ? hour[1] : hour;
+      let minute = time.slice(3, 5);
+      minute = minute[0] === "0" ? minute[1] : minute;
       const appointmentData = {
         businessId: "1",
         serviceId: "1",
         customerId: customer.id,
         employeeId: "2",
-        hour: time,
-        minute: 0,
+        hour: hour,
+        minute: minute,
         day: date.slice(8, 10),
         month: date.slice(6, 7),
         year: date.slice(0, 4)

@@ -7,7 +7,7 @@ import Packages from './Packages';
 import OurGallery from './OurGallery';
 import Reviews from './Reviews';
 
-const TabContent = ({ tab }) => {
+const TabContent = ({ tab, salonID }) => {
     switch (tab) {
         case 'About us':
             return <>
@@ -15,7 +15,7 @@ const TabContent = ({ tab }) => {
             </>;
         case 'Services':
             return <>
-                <Services />
+                <Services salonID = {salonID} />
             </>;
         case 'Package':
             return <>
@@ -36,7 +36,7 @@ const TabContent = ({ tab }) => {
 
 const Tabs = ['About us', 'Services', 'Package', 'Gallery', 'Reviews'];
 
-const TabSelection = () => {
+const TabSelection = ({ salonID }) => {
     const [selectedTab, setSelectedTab] = useState('About us');
 
     const renderItem = ({ item }) => (
@@ -69,7 +69,7 @@ const TabSelection = () => {
                 showsHorizontalScrollIndicator={false}
             />
             <View style={{ marginTop: 20 }}>
-                <TabContent tab={selectedTab} />
+                <TabContent tab={selectedTab} salonID={salonID} />
             </View>
         </View>
     );

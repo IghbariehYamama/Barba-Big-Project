@@ -1,16 +1,18 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import React from 'react';
+import React, { useContext } from 'react'
 import { COLORS, SIZES } from '../constants';
 import { useNavigation } from '@react-navigation/native';
+import { SalonContext } from './SalonContext'
 
-const SpecialistMessageCard = ({ name, position, avatar }) => {
+const SpecialistMessageCard = ({ name, position, employeeId }) => {
     const navigation = useNavigation();
+    const { salonID } = useContext(SalonContext);
 
     return (
         <View style={styles.container}>
             <View style={styles.leftContainer}>
                 <Image
-                    source={avatar}
+                    source={{uri: `https://${appServer.serverName}/businesses/photos/${salonID}/employees/${employeeId}`}}
                     resizeMode='contain'
                     style={styles.avatar}
                 />
