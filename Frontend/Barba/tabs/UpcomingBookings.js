@@ -1,18 +1,18 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Switch } from 'react-native';
-import React, { useRef, useState } from 'react';
-import { upcomingBookings } from '../data';
-import { SIZES, COLORS } from '../constants';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Switch, Alert } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
+import { customer, upcomingBookings } from '../data'
+import { SIZES, COLORS, appServer, images } from '../constants'
 import RBSheet from "react-native-raw-bottom-sheet";
 import Button from '../components/Button';
 import { useNavigation } from '@react-navigation/native';
 
-const UpcomingBookings = () => {
-  const [bookings, setBookings] = useState(upcomingBookings);
+const UpcomingBookings = ({ bookings }) => {
   const refRBSheet = useRef();
   const navigation = useNavigation();
+  const [upcomingBookings, setUpcomingBookings] = useState(bookings);
 
   const toggleRemindMe = (itemId) => {
-    const updatedBookings = bookings.map(booking => {
+    const updatedBookings = upcomingBookings.map(booking => {
       if (booking.id === itemId) {
         return { ...booking, hasRemindMe: !booking.hasRemindMe };
       }
@@ -21,14 +21,53 @@ const UpcomingBookings = () => {
     setBookings(updatedBookings);
   };
 
+  const manualFormatDate = (year, month, day, hour, minute) => {
+    return `${day}/${month}/${year} - ${hour}:${minute.toString().padStart(2, '0')}`;
+  };
 
+  const handleCancelBooking = (bookingId) => {
+    Alert.alert(
+        "Cancel Booking",
+        "Are you sure you want to cancel this booking? You can only refund 80% of the payment as per policy.",
+        [
+          { text: "No", style: "cancel" },
+          {
+            text: "Yes, Cancel",
+            onPress: async () => {
+              try {
+                const response = await fetch(
+                    `https://${appServer.serverName}/customers/bookings/status/update`,
+                    {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ bookingId: bookingId, bookingStatus: "CANCELLED" }),
+                    }
+                );
+
+                if (response.ok) {
+                  Alert.alert("Success", "Your booking has been successfully canceled.");
+                  setUpcomingBookings((prevBookings) => prevBookings.filter((b) => b.id !== bookingId));
+                } else {
+                  Alert.alert("Error", "Failed to cancel the booking. Please try again.");
+                }
+              } catch (error) {
+                console.error("Failed to cancel booking:", error);
+                Alert.alert("Error", "An error occurred while canceling the booking.");
+              }
+            },
+          },
+        ]
+    );
+  };
 
   return (
     <View style={[styles.container, { 
       backgroundColor:COLORS.tertiaryWhite
     }]}>
       <FlatList
-        data={bookings} // Use 'bookings' instead of 'upcomingBookings'
+        data={upcomingBookings} // Use 'upcomingBookings'
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
@@ -36,15 +75,16 @@ const UpcomingBookings = () => {
             backgroundColor: COLORS.white,
           }]}>
             <View style={styles.dateContainer}>
-              <Text style={[styles.date, { 
-                color: COLORS.greyscale900
-              }]}>{item.date}</Text>
+
+              <Text style={[styles.date, { color: COLORS.greyscale900 }]}>
+                {manualFormatDate(item.year, item.month, item.day, item.hour, item.minute)}
+              </Text>
               <View style={styles.rightContainer}>
                 <Text style={[styles.remindMeText, { 
                   color: COLORS.grayscale700,
                 }]}>Remind me</Text>
                 <Switch
-                  value={item.hasRemindMe}
+                  value={true}
                   onValueChange={() => toggleRemindMe(item.id)}
                   thumbColor={item.hasRemindMe ? '#fff' : COLORS.white}
                   trackColor={{ false: '#EEEEEE', true: COLORS.primary }}
@@ -58,21 +98,22 @@ const UpcomingBookings = () => {
             }]} />
             <View style={styles.detailsContainer}>
               <Image
-                source={item.image}
+                source={images.salon5}
                 resizeMode='cover'
                 style={styles.barberImage}
               />
               <View style={styles.detailsRightContainer}>
                 <Text style={[styles.name, { 
                    color: COLORS.greyscale900
-                }]}>{item.name}</Text>
-                <Text style={[styles.address, { 
+                }]}>{item.business.name}</Text>
+                <Text style={[styles.serviceTitle, {
                   color: COLORS.grayscale700,
-                }]}>{item.address}</Text>
+                }]}>Employee:</Text>
+                <Text style={styles.serviceText}>{item.employee.name}</Text>
                 <Text style={[styles.serviceTitle, { 
                   color: COLORS.grayscale700,
-                }]}>Services:</Text>
-                <Text style={styles.serviceText}>{item.services.join(", ")}</Text>
+                }]}>Service:</Text>
+                <Text style={styles.serviceText}>{item.service.name}</Text>
               </View>
             </View>
             <View style={[styles.separateLine, { 
@@ -81,12 +122,12 @@ const UpcomingBookings = () => {
               }]} />
             <View style={styles.buttonContainer}>
               <TouchableOpacity
-                onPress={() => refRBSheet.current.open()}
-                style={styles.cancelBtn}>
+                  onPress={() => handleCancelBooking(item.id)}
+                  style={styles.cancelBtn}>
                 <Text style={styles.cancelBtnText}>Cancel Booking</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                onPress={()=>navigation.navigate("EReceipt")}
+                onPress={()=>navigation.navigate("EReceipt", { bookingID: item.id })}
                 style={styles.receiptBtn}>
                 <Text style={styles.receiptBtnText}>View E-Receipt</Text>
               </TouchableOpacity>

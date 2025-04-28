@@ -1,15 +1,42 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, FlatList } from 'react-native';
-import React, { useState } from 'react';
-import { COLORS, SIZES, icons, images } from '../constants';
+import React, { useEffect, useState } from 'react'
+import { COLORS, SIZES, icons, images, appServer } from '../constants'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native-virtualized-view';
-import { banners, categories, category, mostPopularSalons, salonsNearbyYourLocations } from '../data';
+import { banners, categories, category, customer, mostPopularSalons } from '../data'
 import Category from '../components/Category';
 import SubHeaderItem from '../components/SubHeaderItem';
 import SalonCard from '../components/SalonCard';
 
 const Home = ({ navigation }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [salonsNearbyYourLocation, setSalonsNearbyYourLocation] = useState([]);
+
+    // Fetch salons nearby your location from API
+    useEffect(() => {
+        const fetchSalons = async () => {
+            try {
+                const response = await fetch(`https://${appServer.serverName}/businesses/all`);  // Replace with your API endpoint
+                const data = await response.json();
+                setSalonsNearbyYourLocation(data);  // Set fetched data
+            } catch (error) {
+                console.error("Error fetching salons:", error);
+            }
+        };
+
+        fetchSalons();
+    }, []);
+    const getGreeting = () => {
+        const currentHour = new Date().getHours();
+
+        if (currentHour < 12) {
+            return "Good Morning 🌞";
+        } else if (currentHour < 18) {
+            return "Good Afternoon 🌅";
+        } else {
+            return "Good Evening 🌙";
+        }
+    };
 
   const renderBannerItem = ({ item }) => (
     <View style={styles.bannerContainer}>
@@ -55,10 +82,10 @@ const Home = ({ navigation }) => {
               style={styles.userIcon}
             />
             <View style={styles.viewNameContainer}>
-               <Text style={styles.greeeting}>Good Morning👋</Text>
+               <Text style={styles.greeeting}>{getGreeting()}</Text>
                <Text style={[styles.title, { 
                 color: COLORS.greyscale900
-               }]}>Andrew Ainsley</Text>
+               }]}>{customer.name}</Text>
             </View>
           </View>
           <View style={styles.viewRight}>
@@ -189,7 +216,7 @@ const Home = ({ navigation }) => {
   const renderSalonsNearbyYourLocation = () => {
     const [selectedCategories, setSelectedCategories] = useState(["1"]);
 
-    const filteredSalons = salonsNearbyYourLocations.filter(course => selectedCategories.includes("1") || selectedCategories.includes(course.categoryId));
+    const filteredSalons = salonsNearbyYourLocation.filter(course => selectedCategories.includes("1") || selectedCategories.includes(course.categoryId));
 
    // Category item
    const renderCategoryItem = ({ item }) => (
@@ -227,7 +254,7 @@ const Home = ({ navigation }) => {
     return (
       <View>
           <SubHeaderItem
-          title="Nearby Your Location"
+          title="All Salons"
           navTitle="See All"
           onPress={() => navigation.navigate("SalonsNearbyYourLocation")}
         />
@@ -247,11 +274,11 @@ const Home = ({ navigation }) => {
               return (
                 <SalonCard
                   name={item.name}
-                  image={item.image}
+                  image={images[item.image]}
                   category={item.category}
                   rating={item.rating}
                   location={item.location}
-                  distance={item.distance}
+                  //distance={item.distance}
                   onPress={()=>navigation.navigate("SalonDetails")}
                   categoryId={item.categoryId} 
                 />
@@ -331,7 +358,7 @@ const Home = ({ navigation }) => {
                   category={item.category}
                   rating={item.rating}
                   location={item.location}
-                  distance={item.distance}
+                  //distance={item.distance}
                   onPress={()=>navigation.navigate("SalonDetails")}
                   categoryId={item.categoryId} 
                 />

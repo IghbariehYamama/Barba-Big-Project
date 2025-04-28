@@ -5,45 +5,61 @@ import { COLORS, SIZES, icons, images } from "../constants";
 import SocialButtonV2 from "../components/SocialButtonV2";
 
 const Welcome = ({ navigation }) => {
-
   return (
-    <SafeAreaView style={styles.area}>
-      <View style={styles.container}>
-        {/* change the default logo */}
-        <Image source={images.logo} resizeMode="contain" style={styles.logo} />
-        <Text style={styles.title}>Welcome Back!</Text>
-        <Text style={[styles.subtitle, { color: "black" }]}>
-          Hello there, Continue with and discover the salons from around the world.
-        </Text>
-        <View style={{ marginVertical: 32 }}>
-          <SocialButtonV2 title="Continue with Apple" icon={icons.appleLogo} onPress={() => navigation.navigate("Signup")} 
-          iconStyles={{ tintColor: COLORS.black }} />
-          <SocialButtonV2 title="Continue with Google" icon={icons.google} onPress={() => navigation.navigate("Signup")} />
-          <SocialButtonV2 title="Continue with Email" icon={icons.email2} onPress={() => navigation.navigate("Signup")} />
+      <SafeAreaView style={styles.area}>
+        <View style={styles.container}>
+          {/* Change the default logo */}
+          <Image source={images.logo} resizeMode="contain" style={styles.logo} />
+          <Text style={styles.title}>Welcome!</Text>
+          <Text style={[styles.subtitle, { color: "black" }]}>
+            Discover and book salons from around the country.
+          </Text>
+
+          <View style={{ marginVertical: 32 }}>
+            <SocialButtonV2
+                title="Continue with Apple"
+                icon={icons.appleLogo}
+                onPress={() => navigation.navigate("Signup")}
+                iconStyles={{ tintColor: COLORS.black }}
+            />
+            <SocialButtonV2
+                title="Continue with Google"
+                icon={icons.google}
+                onPress={() => navigation.navigate("Signup")}
+            />
+            <SocialButtonV2
+                title="Continue with Email"
+                icon={icons.email2}
+                onPress={() => navigation.navigate("Signup")}
+            />
+          </View>
+
+          {/* Signup & Signin Buttons */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+                style={styles.signupButton}
+                onPress={() => navigation.navigate("SignUpPhoneNumber")}
+            >
+              <Text style={styles.buttonText}>Sign Up</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={styles.signinButton}
+                onPress={() => navigation.navigate("LoginPhoneNumber")}
+            >
+              <Text style={styles.buttonText}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={{ flexDirection: "row" }}>
-          <Text style={[styles.loginTitle, {
-            color: "black"
-          }]}>Already have account? </Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Login")}>
-            <Text style={styles.loginSubtitle}>Log In</Text>
+
+        <View style={styles.bottomContainer}>
+          <Text style={styles.bottomTitle}>
+            By continuing, you accept the Terms of Use and
+          </Text>
+          <TouchableOpacity onPress={() => navigation.navigate("PrivacyPolicy")}>
+            <Text style={styles.bottomSubtitle}>Privacy Policy.</Text>
           </TouchableOpacity>
         </View>
-      </View>
-      <View style={styles.bottomContainer}>
-        <Text style={[styles.bottomTitle, {
-          color: COLORS.black
-        }]}>
-          By continuing, you accept the Terms Of Use and
-        </Text>
-        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-          <Text style={[styles.bottomSubtitle, {
-            color: COLORS.black
-          }]}>Privacy Policy.</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
   );
 };
 
@@ -63,8 +79,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     marginBottom: 22,
-    marginTop: -22,
-    tintColor: COLORS.primary
+    tintColor: COLORS.primary,
   },
   title: {
     fontSize: 28,
@@ -80,22 +95,33 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: 16,
   },
-  loginTitle: {
-    fontSize: 14,
-    fontFamily: "regular",
-    color: "black",
+  buttonContainer: {
+    flexDirection: "row",
+    marginTop: 20,
+    gap: 10,
   },
-  loginSubtitle: {
-    fontSize: 14,
+  signupButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  signinButton: {
+    backgroundColor: COLORS.secondary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  buttonText: {
+    fontSize: 16,
     fontFamily: "semiBold",
-    color: COLORS.primary,
+    color: COLORS.white,
   },
   bottomContainer: {
     position: "absolute",
     bottom: 32,
-    right: 0,
     left: 0,
-    width: SIZES.width - 32,
+    right: 0,
     alignItems: "center",
   },
   bottomTitle: {

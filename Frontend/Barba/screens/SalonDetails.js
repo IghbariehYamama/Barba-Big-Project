@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, Linking } from 'react-native'
 import React, { useRef, useState } from 'react';
 import { COLORS, SIZES, icons, images, socials } from "../constants";
 import AutoSlider from '../components/AutoSlider';
@@ -63,7 +63,7 @@ const SalonDetails = ({ navigation }) => {
           <TouchableOpacity
             onPress={() => setIsOpen(!isOpen)}
             style={[styles.salonBtn, {
-              backgroundColor: isOpen ? COLORS.primary : "red"
+              backgroundColor: isOpen ? "green" : "red"
             }]}>
             <Text style={styles.salonBtnText}>{isOpen ? "Open" : "Closed"}</Text>
           </TouchableOpacity>
@@ -77,7 +77,7 @@ const SalonDetails = ({ navigation }) => {
           />
           <Text style={[styles.locationText, {
             color: COLORS.grayscale700,
-          }]}>6993 Meadow Valley Terrace, New York</Text>
+          }]}>Umm Al-Fahm</Text>
         </View>
         <View style={styles.salonItemContainer}>
           <Image
@@ -93,6 +93,7 @@ const SalonDetails = ({ navigation }) => {
 
         {/* More information links */}
         <View style={styles.linkContainer}>
+          {/*
           <LinkItem
             name="Website"
             icon={icons.explore}
@@ -108,10 +109,21 @@ const SalonDetails = ({ navigation }) => {
             icon={icons.phoneCall}
             onPress={() => navigation.navigate("Call")}
           />
+          */}
+          <LinkItem
+              name="Facebook"
+              icon={icons.facebook2}
+              onPress={() => Linking.openURL('https://facebook.com/Contour.Design.Studio')}
+          />
+          <LinkItem
+              name="Instagram"
+              icon={icons.instagram}
+              onPress={() => Linking.openURL('https://www.instagram.com/contourstudio?igsh=a2ttdWM2amZpM2M0')}
+          />
           <LinkItem
             name="Direction"
             icon={icons.location2}
-            onPress={() => console.log("Direction")}
+            onPress={() => Linking.openURL('https://waze.com/ul/hsv8wxyts7')}
           />
           <LinkItem
             name="Share"
@@ -164,7 +176,7 @@ const SalonDetails = ({ navigation }) => {
         ref={refRBSheet}
         closeOnDragDown={true}
         closeOnPressMask={false}
-        height={360}
+        height={250}
         customStyles={{
           wrapper: {
             backgroundColor: "rgba(0,0,0,0.5)",
@@ -175,7 +187,7 @@ const SalonDetails = ({ navigation }) => {
           container: {
             borderTopRightRadius: 32,
             borderTopLeftRadius: 32,
-            height: 360,
+            height: 250,
             backgroundColor: COLORS.white,
             alignItems: "center",
           }
@@ -194,11 +206,13 @@ const SalonDetails = ({ navigation }) => {
             name="WhatsApp"
             onPress={() => console.log("WhatsApp")}
           />
+          {/*
           <SocialIcon
             icon={socials.twitter}
             name="X"
             onPress={() => console.log("Twitter")}
           />
+          */}
           <SocialIcon
             icon={socials.facebook}
             name="Facebook"
@@ -209,7 +223,13 @@ const SalonDetails = ({ navigation }) => {
             name="Instagram"
             onPress={() => console.log("Instagram")}
           />
+          <SocialIcon
+              icon={socials.wechat}
+              name="Copy Link"
+              onPress={() => console.log("Instagram")}
+          />
         </View>
+        {/*
         <View style={styles.socialContainer}>
           <SocialIcon
             icon={socials.yahoo}
@@ -232,6 +252,7 @@ const SalonDetails = ({ navigation }) => {
             onPress={() => console.log("Wechat")}
           />
         </View>
+        */}
       </RBSheet>
     </View>
   )

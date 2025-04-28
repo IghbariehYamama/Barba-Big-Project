@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, Alert, Image, TouchableOpacity, Modal, TouchableWithoutFeedback, FlatList, TextInput } from 'react-native';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
-import { COLORS, SIZES, FONTS, icons } from '../constants';
+import { COLORS, SIZES, FONTS, icons, appServer } from '../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import { reducer } from '../utils/reducers/formReducers';
@@ -11,288 +11,420 @@ import Input from '../components/Input';
 import { getFormatedDate } from "react-native-modern-datepicker";
 import DatePickerModal from '../components/DatePickerModal';
 import Button from '../components/Button';
+import { customer } from '../data/index';
+import { allcities } from '../data/allCities'
 
-const isTestMode = true
+
+const isTestMode = false;
 
 const initialState = {
   inputValues: {
-    fullName: isTestMode ? 'John Doe' : '',
+    name: isTestMode ? 'John Doe' : '',
     email: isTestMode ? 'example@gmail.com' : '',
-    nickname: isTestMode ? "" : "",
-    phoneNumber: ''
+    password: isTestMode ? "" : "",
+    dateOfBirth: '2001-12-31',
+    gender: ''
   },
   inputValidities: {
-    fullName: false,
+    name: false,
     email: false,
-    nickname: false,
-    phoneNumber: false,
+    password: false,
+    dateOfBirth: false,
+    gender: false,
   },
   formIsValid: false,
-}
+};
 
-
-const FillYourProfile = ({ navigation }) => {
+const FillYourProfile = ({ route, navigation }) => {
   const [image, setImage] = useState(null);
   const [error, setError] = useState();
   const [formState, dispatchFormState] = useReducer(reducer, initialState);
   const [areas, setAreas] = useState([]);
   const [selectedArea, setSelectedArea] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [openStartDatePicker, setOpenStartDatePicker] = useState(false);
+  const [openDatePicker, setOpenDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [genderDropdownVisible, setGenderDropdownVisible] = useState(false);
+  const [selectedGender, setSelectedGender] = useState(formState.inputValues.gender);
+  const [cities, setCities] = useState(allcities);
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [cityDropdownVisible, setCityDropdownVisible] = useState(false);
+  const { phoneNumber } = route.params;
 
-  const today = new Date();
-  const startDate = getFormatedDate(
-    new Date(today.setDate(today.getDate() + 1)),
-    "YYYY/MM/DD"
-  );
 
-  const [startedDate, setStartedDate] = useState("12/12/2023");
+  const genders = ["MALE", "FEMALE"];
 
-  const handleOnPressStartDate = () => {
-    setOpenStartDatePicker(!openStartDatePicker);
+  const handleGenderSelect = (gender) => {
+    setSelectedGender(gender);
+    inputChangedHandler("gender", gender);
+    setGenderDropdownVisible(false);
+  };
+
+
+  const today = getFormatedDate(new Date(), 'YYYY-MM-DD'); // Or 'YYYY/MM/DD' based on library
+
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+    inputChangedHandler('dateOfBirth', date);
+    setOpenDatePicker(false);
   };
 
   const inputChangedHandler = useCallback(
-    (inputId, inputValue) => {
-      const result = validateInput(inputId, inputValue)
-      dispatchFormState({ inputId, validationResult: result, inputValue })
-    },
-    [dispatchFormState]
-  )
+      (inputId, inputValue) => {
+        const result = validateInput(inputId, inputValue);
+        dispatchFormState({ inputId, validationResult: result, inputValue });
+      },
+      [dispatchFormState]
+  );
 
   useEffect(() => {
     if (error) {
-      Alert.alert('An error occured', error)
+      Alert.alert('An error occurred', error);
     }
-  }, [error])
+  }, [error]);
 
   const pickImage = async () => {
     try {
-      const tempUri = await launchImagePicker()
+      const tempUri = await launchImagePicker();
 
-      if (!tempUri) return
+      if (!tempUri) return;
 
-      // set the image
-      setImage({ uri: tempUri })
-    } catch (error) { }
+      setImage({ uri: tempUri });
+    } catch (error) {}
   };
 
-  // fectch codes from rescountries api
   useEffect(() => {
     fetch("https://restcountries.com/v2/all")
-      .then(response => response.json())
-      .then(data => {
-        let areaData = data.map((item) => {
-          return {
-            code: item.alpha2Code,
-            item: item.name,
-            callingCode: `+${item.callingCodes[0]}`,
-            flag: `https://flagsapi.com/${item.alpha2Code}/flat/64.png`
+        .then(response => response.json())
+        .then(data => {
+          let areaData = data.map((item) => {
+            return {
+              code: item.alpha2Code,
+              item: item.name,
+              callingCode: `+${item.callingCodes[0]}`,
+              flag: `https://flagsapi.com/${item.alpha2Code}/flat/64.png`
+            };
+          });
+
+          setAreas(areaData);
+          if (areaData.length > 0) {
+            let defaultData = areaData.filter((a) => a.code == "IL");
+
+            if (defaultData.length > 0) {
+              setSelectedArea(defaultData[0]);
+            }
           }
         });
+  }, []);
 
-        setAreas(areaData);
-        if (areaData.length > 0) {
-          let defaultData = areaData.filter((a) => a.code == "US");
-
-          if (defaultData.length > 0) {
-            setSelectedArea(defaultData[0])
-          }
-        }
-      })
-  }, [])
-
-  // render countries codes modal
   function RenderAreasCodesModal() {
-
     const renderItem = ({ item }) => {
       return (
-        <TouchableOpacity
-          style={{
-            padding: 10,
-            flexDirection: "row"
-          }}
-          onPress={() => {
-            setSelectedArea(item),
-              setModalVisible(false)
-          }}
-        >
-          <Image
-            source={{ uri: item.flag }}
-            contentFit='contain'
-            style={{
-              height: 30,
-              width: 30,
-              marginRight: 10
-            }}
-          />
-          <Text style={{ fontSize: 16, color: "#fff" }}>{item.item}</Text>
-        </TouchableOpacity>
-      )
-    }
+          <TouchableOpacity
+              style={{
+                padding: 10,
+                flexDirection: "row"
+              }}
+              onPress={() => {
+                setSelectedArea(item),
+                    setModalVisible(false);
+              }}
+          >
+            <Image
+                source={{ uri: item.flag }}
+                contentFit='contain'
+                style={{
+                  height: 30,
+                  width: 30,
+                  marginRight: 10
+                }}
+            />
+            <Text style={{ fontSize: 16, color: "#fff" }}>{item.item}</Text>
+          </TouchableOpacity>
+      );
+    };
     return (
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-      >
-        <TouchableWithoutFeedback
-          onPress={() => setModalVisible(false)}
+        <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
         >
-          <View
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+          <TouchableWithoutFeedback
+              onPress={() => setModalVisible(false)}
           >
             <View
-              style={{
-                height: SIZES.height,
-                width: SIZES.width,
-                backgroundColor: COLORS.primary,
-                borderRadius: 12
-              }}
+                style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
             >
-              <TouchableOpacity
-                onPress={() => setModalVisible(false)}
-                style={styles.closeBtn}>
-                <Ionicons name="close-outline" size={24} color={COLORS.primary} />
-              </TouchableOpacity>
-              <FlatList
-                data={areas}
-                renderItem={renderItem}
-                horizontal={false}
-                keyExtractor={(item) => item.code}
-                style={{
-                  padding: 20,
-                  marginBottom: 20
-                }}
-              />
+              <View
+                  style={{
+                    height: SIZES.height,
+                    width: SIZES.width,
+                    backgroundColor: COLORS.primary,
+                    borderRadius: 12
+                  }}
+              >
+                <TouchableOpacity
+                    onPress={() => setModalVisible(false)}
+                    style={styles.closeBtn}>
+                  <Ionicons name="close-outline" size={24} color={COLORS.primary} />
+                </TouchableOpacity>
+                <FlatList
+                    data={areas}
+                    renderItem={renderItem}
+                    horizontal={false}
+                    keyExtractor={(item) => item.code}
+                    style={{
+                      padding: 20,
+                      marginBottom: 20
+                    }}
+                />
+              </View>
             </View>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-    )
+          </TouchableWithoutFeedback>
+        </Modal>
+    );
   }
 
   return (
-    <SafeAreaView style={styles.area}>
-      <View style={styles.container}>
-        <Header title="Fill Your Profile" />
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={{ alignItems: "center", marginVertical: 12 }}>
-            <View style={styles.avatarContainer}>
-              <Image
-                source={image === null ? icons.userDefault2 : image}
-                resizeMode="cover"
-                style={styles.avatar} />
-              <TouchableOpacity
-                onPress={pickImage}
-                style={styles.pickImage}>
-                <MaterialCommunityIcons
-                  name="pencil-outline"
-                  size={24}
-                  color={COLORS.white} />
-              </TouchableOpacity>
+      <SafeAreaView style={styles.area}>
+        <View style={styles.container}>
+          <Header title="Fill Your Profile" />
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={{ alignItems: "center", marginVertical: 12 }}>
+              <View style={styles.avatarContainer}>
+                <Image
+                    source={image === null ? icons.userDefault2 : image}
+                    resizeMode="cover"
+                    style={styles.avatar} />
+                <TouchableOpacity
+                    onPress={pickImage}
+                    style={styles.pickImage}>
+                  <MaterialCommunityIcons
+                      name="pencil-outline"
+                      size={24}
+                      color={COLORS.white} />
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-          <View>
-            <Input
-              id="fullName"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['fullName']}
-              placeholder="Full Name"
-              placeholderTextColor={COLORS.gray} />
-            <Input
-              id="nickname"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['nickname']}
-              placeholder="Nickname"
-              placeholderTextColor={COLORS.gray} />
-            <Input
-              id="email"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['email']}
-              placeholder="Email"
-              placeholderTextColor={COLORS.gray}
-              keyboardType="email-address" />
-            <View style={{
-              width: SIZES.width - 32
-            }}>
-              <TouchableOpacity
-                style={[styles.inputBtn, {
-                  backgroundColor: COLORS.greyscale500,
-                  borderColor: COLORS.greyscale500,
-                }]}
-                onPress={handleOnPressStartDate}
-              >
-                <Text style={{ ...FONTS.body4, color: COLORS.grayscale400 }}>{startedDate}</Text>
-                <Feather name="calendar" size={24} color={COLORS.grayscale400} />
-              </TouchableOpacity>
-            </View>
-            <View style={[styles.inputContainer, {
-              backgroundColor: COLORS.greyscale500,
-              borderColor: COLORS.greyscale500,
-            }]}>
-              <TouchableOpacity
-                style={styles.selectFlagContainer}
-                onPress={() => setModalVisible(true)}>
-                <View style={{ justifyContent: "center" }}>
-                  <Image
-                    source={icons.down}
-                    resizeMode='contain'
-                    style={styles.downIcon}
-                  />
-                </View>
-                <View style={{ justifyContent: "center", marginLeft: 5 }}>
-                  <Image
-                    source={{ uri: selectedArea?.flag }}
-                    contentFit="contain"
-                    style={styles.flagIcon}
-                  />
-                </View>
-                <View style={{ justifyContent: "center", marginLeft: 5 }}>
-                  <Text style={{ color: "#111", fontSize: 12 }}>{selectedArea?.callingCode}</Text>
-                </View>
-              </TouchableOpacity>
-              {/* Phone Number Text Input */}
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your phone number"
-                placeholderTextColor={COLORS.gray}
-                selectionColor="#111"
-                keyboardType="numeric"
+            <View>
+              <Input
+                  id="name"
+                  onInputChanged={inputChangedHandler}
+                  errorText={formState.inputValidities['name']}
+                  placeholder="Name"
+                  placeholderTextColor={COLORS.gray} />
+              <Input
+                  id="email"
+                  onInputChanged={inputChangedHandler}
+                  errorText={formState.inputValidities['email']}
+                  placeholder="email"
+                  keyboardType="email-address"
+                  placeholderTextColor={COLORS.gray} />
+              <Input
+                  id="phone"
+                  onInputChanged={inputChangedHandler}
+                  errorText={formState.inputValidities['phone']}
+                  placeholder="Phone Number"
+                  placeholderTextColor={COLORS.gray}
+                  value={phoneNumber}
+                  editable={false}
               />
+              <Input
+                  id="password"
+                  onInputChanged={inputChangedHandler}
+                  errorText={formState.inputValidities['password']}
+                  placeholder="Password"
+                  placeholderTextColor={COLORS.gray}
+                  secureTextEntry={true} />
+
+              <TouchableOpacity
+                  style={[styles.inputBtn, { marginVertical: 12 }]}
+                  onPress={() => setGenderDropdownVisible(true)}
+              >
+                <Text style={{ color: COLORS.gray, ...FONTS.body4 }}>
+                  {selectedGender || "Select Gender"}
+                </Text>
+                <Feather name="chevron-down" size={20} color={COLORS.gray} />
+              </TouchableOpacity>
+
+              {/* Gender Dropdown Modal */}
+              <Modal
+                  animationType="fade"
+                  transparent={true}
+                  visible={genderDropdownVisible}
+              >
+                <TouchableWithoutFeedback onPress={() => setGenderDropdownVisible(false)}>
+                  <View style={styles.modalOverlay}>
+                    <View style={styles.modalContainer}>
+                      <Text style={styles.dropdownHeader}>Select Gender</Text>
+                      <FlatList
+                          data={genders}
+                          keyExtractor={(item) => item}
+                          renderItem={({ item }) => (
+                              <TouchableOpacity
+                                  style={styles.dropdownItem}
+                                  onPress={() => handleGenderSelect(item)}
+                              >
+                                <Text style={styles.dropdownItemText}>{item}</Text>
+                              </TouchableOpacity>
+                          )}
+                      />
+                    </View>
+                  </View>
+                </TouchableWithoutFeedback>
+              </Modal>
+
+
+              {/*
+              <TouchableOpacity
+                  style={[styles.inputBtn, { marginVertical: 12 }]}
+                  onPress={() => setCityDropdownVisible(true)}
+              >
+                <Text style={{ color: COLORS.gray, ...FONTS.body4 }}>
+                  {selectedCity || "Select City"}
+                </Text>
+                <Feather name="chevron-down" size={20} color={COLORS.gray} />
+              </TouchableOpacity>
+              */}
+              {/* Dropdown modal for cities
+              <Modal
+                  animationType="slide"
+                  transparent={true}
+                  visible={cityDropdownVisible}
+              >
+                <TouchableWithoutFeedback onPress={() => setCityDropdownVisible(false)}>
+                  <View style={styles.modalOverlay}>
+                    <View style={styles.dropdownContainer}>
+                      <FlatList
+                          data={cities}
+                          keyExtractor={(item, index) => `${item}-${index}`}
+                          renderItem={({ item }) => (
+                              <TouchableOpacity
+                                  style={styles.dropdownItem}
+                                  onPress={() => {
+                                    setSelectedCity(item);
+                                    inputChangedHandler("city", item); // Update form state
+                                    setCityDropdownVisible(false);
+                                  }}
+                              >
+                                <Text style={styles.dropdownItemText}>{item}</Text>
+                              </TouchableOpacity>
+                          )}
+                      />
+                    </View>
+                  </View>
+                </TouchableWithoutFeedback>
+              </Modal>*/}
+
+              <View style={{
+                width: SIZES.width - 32
+              }}>
+                <TouchableOpacity
+                    style={styles.inputBtn}
+                    onPress={() => setOpenDatePicker(true)}>
+                  <Text style={styles.dateText}>{selectedDate || "Select Date of Birth"}</Text>
+                  <Feather name="calendar" size={24} color={COLORS.gray} />
+                </TouchableOpacity>
+              </View>
+
             </View>
-          </View>
-        </ScrollView>
-      </View>
-      <DatePickerModal
-        open={openStartDatePicker}
-        startDate={startDate}
-        selectedDate={startedDate}
-        onClose={() => setOpenStartDatePicker(false)}
-        onChangeStartDate={(date) => setStartedDate(date)}
-      />
-      {RenderAreasCodesModal()}
-      <View style={styles.bottomContainer}>
-        <Button
-          title="Skip"
-          style={{
-            width: (SIZES.width - 32) / 2 - 8,
-            borderRadius: 32,
-            backgroundColor: COLORS.tansparentPrimary,
-            borderColor: COLORS.tansparentPrimary
-          }}
-          textColor={COLORS.primary}
-          onPress={() => navigation.navigate("CreateNewPIN")}
+          </ScrollView>
+        </View>
+        <DatePickerModal
+            open={openDatePicker}
+            startDate={getFormatedDate(new Date('1900/01/01'), 'YYYY/MM/DD')} // Earliest selectable date
+            selectedDate={selectedDate}
+            onClose={() => setOpenDatePicker(false)}
+            onChangeStartDate={(date) => {
+              const today = new Date();
+              const selected = new Date(date);
+
+              if (selected <= today) {
+                handleDateChange(date); // Valid date
+              } else {
+                Alert.alert("Invalid Date", "You cannot select a future date."); // Prevent future selection
+              }
+            }}
+            minimumDate={getFormatedDate(new Date('1900/01/01'), 'YYYY/MM/DD')} // Set min date
+            maximumDate={getFormatedDate(new Date(), 'YYYY/MM/DD')} // Disable future dates
+            options={{
+              textHeaderColor: COLORS.primary,
+              textSecondaryColor: COLORS.gray,
+              mainColor: COLORS.primary,
+              textDisabledColor: COLORS.lightGray, // Style for disabled dates
+            }}
+            mode="calendar"
+            customDatesStyles={(date) => {
+              const today = new Date();
+              const selectedDate = new Date(date);
+
+              if (selectedDate > today) {
+                return {
+                  textStyle: { color: COLORS.lightGray }, // Grey out future dates
+                  disabled: true, // Make future dates unselectable
+                };
+              }
+              return {};
+            }}
         />
-        <Button
-          title="Continue"
-          filled
-          style={styles.continueButton}
-          onPress={() => navigation.navigate("CreateNewPIN")}
-        />
-      </View>
-    </SafeAreaView>
-  )
+
+
+
+
+        {RenderAreasCodesModal()}
+        <View style={styles.bottomContainer}>
+          <Button
+              title="Continue"
+              filled
+              style={styles.continueButton}
+              onPress={async () => {
+                if (true) {
+                  const { name, email, password, dateOfBirth, gender } = formState.inputValues;
+                  console.log(name, email, password, dateOfBirth, gender);
+                  navigation.navigate("Main");
+                }
+                const { name, email, password, dateOfBirth, gender } = formState.inputValues;
+                const phone = phoneNumber;
+                if (!name || !email || !password) {
+                  Alert.alert("Incomplete Information", "Please complete all the fields.");
+                  return;
+                }
+
+                try {
+                  const addCustomerResponse = await fetch(`https://${appServer.serverName}/customers/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      name,
+                      email,
+                      password,
+                      phone,
+                      dateOfBirth,
+                      gender
+                    }),
+                  });
+
+                  if (addCustomerResponse.ok) {
+
+                    customer.email = email;
+                    customer.name = name;
+                    customer.phone = phoneNumber;
+                    customer.verified = true;
+
+                    Alert.alert("Success", "Profile created successfully!");
+                    navigation.navigate("Main");
+                  } else {
+                    Alert.alert("Error", "Failed to create profile. Please try again.");
+                  }
+                } catch (error) {
+                  Alert.alert("Error", "An error occurred while processing your request.");
+                }
+              }}
+          />
+        </View>
+      </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -390,7 +522,7 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   continueButton: {
-    width: (SIZES.width - 32) / 2 - 8,
+    width: (SIZES.width - 32) - 8,
     borderRadius: 32,
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary
@@ -406,7 +538,75 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 9999
-  }
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '80%',
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    shadowColor: '#000', // iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5, // Android shadow
+    alignItems: 'center',
+  },
+
+  dropdownHeader: {
+    marginBottom: 16,
+    fontSize: 18,
+    color: COLORS.black,
+    fontWeight: '600',
+  },
+
+  dropdownItem: {
+    width: '100%',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.lightGray,
+    alignItems: 'center',
+  },
+
+  dropdownItemText: {
+    fontSize: 16,
+    color: COLORS.black,
+  },
+
+  genderOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: COLORS.lightGray,
+    marginRight: 8,
+  },
+  genderText: {
+    fontSize: 16,
+    color: COLORS.black,
+  },
+  label: {
+    fontSize: 16,
+    color: COLORS.black,
+    marginBottom: 4,
+  },
+
+  selectedDropdownItem: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
+    paddingHorizontal: 20,
+  },
+
+  selectedDropdownText: {
+    color: COLORS.white,
+    fontWeight: 'bold',
+  },
+
 })
 
 export default FillYourProfile

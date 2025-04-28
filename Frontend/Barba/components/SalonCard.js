@@ -7,7 +7,7 @@ const SalonCard = ({
     name,
     image,
     rating,
-    distance,
+    //distance,
     onPress,
     location
 }) => {
@@ -42,8 +42,8 @@ const SalonCard = ({
                 </View>
                 <Text style={styles.location}>{location}</Text>
                 <View style={styles.ratingContainer}>
-                    <MaterialIcons name="location-on" size={14} color="orange" />
-                    <Text style={styles.distance}> {" "}{distance} {"  "}</Text>
+                    {/*<MaterialIcons name="location-on" size={14} color="orange" />
+                    <Text style={styles.distance}> {" "}{distance} {"  "}</Text>*/}
                     <FontAwesome name="star-half-empty" size={14} color="orange" />
                     <Text style={styles.rating}> {" "}{rating}</Text>
                 </View>

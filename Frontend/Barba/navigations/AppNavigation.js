@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState, useEffect } from 'react';
 import BottomTabNavigation from './BottomTabNavigation';
-import { AddNewCard, BookAppointment, Call, CancelBooking, ChangeEmail, ChangePIN, ChangePassword, Chat, CreateNewPIN, CreateNewPassword, CustomerService, EReceipt, EditProfile, FillYourProfile, Fingerprint, ForgotPasswordEmail, ForgotPasswordMethods, ForgotPasswordPhoneNumber, Haircuts, HelpCenter, InviteFriends, Login, Makeup, Manicure, Massage, MostPopularSalons, MyBookmark, Notifications, OTPVerification, Onboarding1, Onboarding2, Onboarding3, Onboarding4, OurServices, OurSpecialists, PackageDetails, PaymentMethods, ReviewSummary, SalonDetails, SalonDetailsGallery, SalonDetailsOurPackages, SalonDetailsReviews, SalonsNearbyYourLocation, Search, ServicesListType, SettingsLanguage, SettingsNotifications, SettingsPayment, SettingsPrivacyPolicy, SettingsSecurity, Signup, Welcome } from '../screens';
+import {AddNewCard, BookAppointment, Call, CancelBooking, ChangeEmail, ChangePIN, ChangePassword, Chat, CreateNewPIN, CreateNewPassword, CustomerService, EReceipt, EditProfile, FillYourProfile, Fingerprint, ForgotPasswordEmail, ForgotPasswordMethods, ForgotPasswordPhoneNumber, Haircuts, HelpCenter, InviteFriends, Login, LoginPhoneNumber, Makeup, Manicure, Massage, MostPopularSalons, MyBookmark, Notifications, OTPVerification, Onboarding1, Onboarding2, Onboarding3, Onboarding4, OurServices, OurSpecialists, PackageDetails, PaymentMethods, ReviewSummary, SalonDetails, SalonDetailsGallery, SalonDetailsOurPackages, SalonDetailsReviews, SalonsNearbyYourLocation, Search, ServicesListType, SettingsLanguage, SettingsNotifications, SettingsPayment, SettingsPrivacyPolicy, SettingsSecurity, Signup, SignUpPhoneNumber, Welcome,} from '../screens';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,16 +38,18 @@ const AppNavigation = () => {
     <NavigationContainer>
             <Stack.Navigator 
               screenOptions={{ headerShown: false }}
-              // replace the second onboaring1 with login in order to make the user not to see the onboarding 
+              // replace the second onboarding1 with login in order to make the user not to see the onboarding
               // when login the next time
-              initialRouteName={isFirstLaunch ? 'Onboarding1' : 'Signup'}>
+              initialRouteName={isFirstLaunch ? 'Onboarding1' : 'Welcome'}>
                 <Stack.Screen name="Onboarding1" component={Onboarding1}/>
                 <Stack.Screen name="Onboarding2" component={Onboarding2}/>
                 <Stack.Screen name="Onboarding3" component={Onboarding3}/>
                 <Stack.Screen name="Onboarding4" component={Onboarding4}/>
                 <Stack.Screen name="Welcome" component={Welcome}/>
                 <Stack.Screen name="Login" component={Login}/>
+                <Stack.Screen name="LoginPhoneNumber" component={LoginPhoneNumber}/>
                 <Stack.Screen name="Signup" component={Signup}/>
+                <Stack.Screen name="SignUpPhoneNumber" component={SignUpPhoneNumber}/>
                 <Stack.Screen name="ForgotPasswordMethods" component={ForgotPasswordMethods}/>
                 <Stack.Screen name="ForgotPasswordEmail" component={ForgotPasswordEmail}/>
                 <Stack.Screen name="ForgotPasswordPhoneNumber" component={ForgotPasswordPhoneNumber}/>
@@ -94,6 +96,7 @@ const AppNavigation = () => {
                 <Stack.Screen name="EReceipt" component={EReceipt}/>
                 <Stack.Screen name="CancelBooking" component={CancelBooking}/>
                 <Stack.Screen name="CustomerService" component={CustomerService}/>
+
               </Stack.Navigator> 
      </NavigationContainer>
   )

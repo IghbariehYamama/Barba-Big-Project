@@ -15,8 +15,6 @@ export const COLORS = {
     error: "#F75555",
     disabled: "#D8D8D8",
     white: "#FFFFFF",
-    secondaryWhite: "#F8F8F8",
-    tertiaryWhite: "#F7F7F7",
     greeen: "#0ABE75",
     secondaryWhite: '#F9F9FF',
     tertiaryWhite: '#fafafa',

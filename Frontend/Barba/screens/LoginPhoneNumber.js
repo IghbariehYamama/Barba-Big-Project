@@ -1,14 +1,18 @@
 import { View, Text, StyleSheet, ScrollView, Image, Alert, TouchableOpacity, Modal, TouchableWithoutFeedback, FlatList, TextInput } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SIZES, icons, images } from '../constants';
+import { COLORS, SIZES, images, appServer, icons } from '../constants'
 import Header from '../components/Header';
-import Checkbox from 'expo-checkbox';
 import Button from '../components/Button';
+import { customer } from '../data/index';
+import Input from '../components/Input'
+import { useFocusEffect } from '@react-navigation/native'
 
-const ForgotPasswordPhoneNumber = ({ navigation }) => {
+const LoginPhoneNumber = ({ navigation }) => {
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [codeSent, setCodeSent] = useState(false);
+    const [verificationCode, setVerificationCode] = useState('');
     const [error, setError] = useState(null);
-    const [isChecked, setChecked] = useState(false);
     const [areas, setAreas] = useState([]);
     const [selectedArea, setSelectedArea] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
@@ -43,6 +47,90 @@ const ForgotPasswordPhoneNumber = ({ navigation }) => {
                 }
             })
     }, [])
+
+    useFocusEffect(
+        useCallback(() => {
+            setCodeSent(false); // Reset state when the screen is revisited
+            return () => {}; // Cleanup function (optional)
+        }, [])
+    );
+
+    // Handle sending phone number to API
+    const handleSendPhoneNumber = async () => {
+        if (!phoneNumber) {
+            Alert.alert('Error', 'Please enter a valid phone number.');
+            return;
+        }
+
+        const fullPhoneNumber = `${selectedArea.callingCode}${phoneNumber}`;
+        try {
+            // Check if phone number exists
+
+            const checkResponse = await fetch(`https://${appServer.serverName}/customers/signIn/phone`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ phoneNumber: phoneNumber }),
+            });
+            if (!checkResponse.ok) {
+                Alert.alert('Info', 'This phone number is not registered.');
+                return;
+            }
+            Alert.alert('Success', checkResponse.body);
+
+            setCodeSent(true);
+            navigation.navigate("OTPVerification", { phoneNumber: phoneNumber, login: true });
+
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    // Handle verifying the code
+
+    const handleVerifyCode = async () => {
+        try {
+            let response = await fetch('https://your-api-endpoint.com/verify-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ phoneNumber: `${selectedArea.callingCode}${phoneNumber}`, code: verificationCode }),
+            });
+
+            let result = await response.json();
+            if (!response.ok || !result.success) {
+                Alert.alert('Error', 'Invalid verification code.');
+                return;
+            }
+
+            response = await fetch(`https://${appServer.serverName}/get-customer-according-to-phone-number`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ phoneNumber: fullPhoneNumber }),
+            });
+            result = await response.json();
+
+            // Create a customer object upon successful verification
+            customer = {
+                id: result.userId,
+                fullName: result.fullName,
+                email: result.email,
+                nickname: result.nickname,
+                phoneNumber: `${selectedArea.callingCode}${phoneNumber}`,
+                verified: true,
+            };
+
+            Alert.alert('Success', 'Your phone number has been verified.');
+            navigation.navigate('Main');
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
 
     // render countries codes modal
     function RenderAreasCodesModal() {
@@ -112,90 +200,56 @@ const ForgotPasswordPhoneNumber = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.area}>
             <View style={styles.container}>
-                <Header title="Forgot Password" />
-                <ScrollView style={{ marginVertical: 54 }} 
-                     showsVerticalScrollIndicator={false}>
+                <Header title="Login" />
+                <ScrollView style={{ marginVertical: 54 }} showsVerticalScrollIndicator={false}>
                     <View style={styles.logoContainer}>
-                        <Image
-                            source={images.logo}
-                            resizeMode='contain'
-                            style={styles.logo}
-                        />
+                        <Image source={images.logo} resizeMode="contain" style={styles.logo} />
                     </View>
-                    <Text style={[styles.title, { 
-                        color: COLORS.black
-                    }]}>Enter Your Phone Number</Text>
-                    <View style={[styles.inputContainer, { backgroundColor: COLORS.greyscale500 }]}>
-                        <TouchableOpacity
-                            style={styles.selectFlagContainer}
-                            onPress={() => setModalVisible(true)}>
-                            <View style={{ justifyContent: "center" }}>
-                                <Image
-                                    source={icons.down}
-                                    resizeMode='contain'
-                                    style={styles.downIcon}
+                    <Text style={[styles.title, { color: COLORS.black }]}>
+                        {codeSent ? 'Enter the Code' : 'Enter Your Phone Number'}
+                    </Text>
+                    {!codeSent ? (
+                        <>
+                            <View style={[styles.inputContainer, { backgroundColor: COLORS.greyscale500 }]}>
+                                <Input
+                                    style={[styles.input, { color: COLORS.black }]}
+                                    placeholder="Enter your phone number"
+                                    placeholderTextColor={COLORS.gray}
+                                    icon={icons.phoneCall}
+                                    keyboardType="numeric"
+                                    onInputChanged={(_, text) => setPhoneNumber(text)}
                                 />
                             </View>
-                            <View style={{ justifyContent: "center", marginLeft: 5 }}>
-                                <Image
-                                    source={{ uri: selectedArea?.flag }}
-                                    contentFit="contain"
-                                    style={styles.flagIcon}
-                                />
-                            </View>
-                            <View style={{ justifyContent: "center", marginLeft: 5 }}>
-                                <Text style={{ color: COLORS.black , fontSize: 12 }}>{selectedArea?.callingCode}</Text>
-                            </View>
-                        </TouchableOpacity>
-                        {/* Phone Number Text Input */}
-                        <TextInput
-                            style={[styles.input, { color: COLORS.black }]}
-                            placeholder="Enter your phone number"
-                            placeholderTextColor={COLORS.gray}
-                            selectionColor="#111"
-                            keyboardType="numeric"
-                        />
-                    </View>
-                    <View style={styles.checkBoxContainer}>
-                        <View style={{ flexDirection: 'row' }}>
-                            <Checkbox
-                                style={styles.checkbox}
-                                value={isChecked}
-                                color={isChecked ? COLORS.primary : "gray"}
-                                onValueChange={setChecked}
+                            <Button title="Send Code" filled onPress={handleSendPhoneNumber} style={styles.button} />
+                        </>
+                    ) : (
+                        <>
+                            <Input
+                                style={[styles.input, { color: COLORS.black, marginVertical: 16 }]}
+                                placeholder="Enter the verification code"
+                                placeholderTextColor={COLORS.gray}
+                                icon={icons.email}
+                                keyboardType="numeric"
+                                onChangeText={setVerificationCode}
                             />
-                            <View style={{ flex: 1 }}>
-                                <Text style={[styles.privacy, { 
-                                    color: COLORS.black
-                                }]}>Remember me</Text>
-                            </View>
-                        </View>
-                    </View>
-                    <Button
-                        title="Reset Password"
-                        filled
-                        onPress={() => navigation.navigate("OTPVerification")}
-                        style={styles.button}
-                    />
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate("Login")}>
-                        <Text style={styles.forgotPasswordBtnText}>Remember the password?</Text>
-                    </TouchableOpacity>
-                    <View>
-                    </View>
+                            <Button title="Verify Code" filled onPress={handleVerifyCode} style={styles.button} />
+                        </>
+                    )}
                 </ScrollView>
-                <View style={styles.bottomContainer}>
-                    <Text style={[styles.bottomLeft, { 
-                        color: COLORS.black
-                    }]}>Don't have an account ?</Text>
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate("Signup")}>
-                        <Text style={styles.bottomRight}>{" "}Sign Up</Text>
-                    </TouchableOpacity>
-                </View>
+                {RenderAreasCodesModal()}
             </View>
-            {RenderAreasCodesModal()}
+
+            <View style={styles.bottomContainer}>
+                <Text style={[styles.bottomLeft, {
+                    color: COLORS.black
+                }]}>Don't have an account?</Text>
+                <TouchableOpacity
+                    onPress={() => navigation.navigate("SignUpPhoneNumber")}>
+                    <Text style={styles.bottomRight}>{" "}Sign Up</Text>
+                </TouchableOpacity>
+            </View>
         </SafeAreaView>
+
     )
 };
 
@@ -262,16 +316,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
     },
-    bottomContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        marginVertical: 18,
-        position: "absolute",
-        bottom: 12,
-        right: 0,
-        left: 0,
-    },
     bottomLeft: {
         fontSize: 14,
         fontFamily: "regular",
@@ -326,7 +370,26 @@ const styles = StyleSheet.create({
         height: 40,
         fontSize: 14,
         color: "#111"
-    }
-})
+    },
+    bottomContainer: {
+        position: "absolute",
+        bottom: 32,
+        left: 0,
+        right: 0,
+        alignItems: "center",
+    },
+    bottomTitle: {
+        fontSize: 12,
+        fontFamily: "regular",
+        color: COLORS.black,
+    },
+    bottomSubtitle: {
+        fontSize: 12,
+        fontFamily: "regular",
+        color: COLORS.black,
+        textDecorationLine: "underline",
+        marginTop: 2,
+    },
+});
 
-export default ForgotPasswordPhoneNumber
+export default LoginPhoneNumber;

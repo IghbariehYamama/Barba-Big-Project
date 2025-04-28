@@ -84,16 +84,6 @@ const Signup = ({ navigation }) => {
             icon={icons.email}
             keyboardType="email-address"
           />
-          <Input
-            onInputChanged={inputChangedHandler}
-            errorText={formState.inputValidities['password']}
-            autoCapitalize="none"
-            id="password"
-            placeholder="Password"
-            placeholderTextColor={COLORS.black}
-            icon={icons.padlock}
-            secureTextEntry={true}
-          />
           <View style={styles.checkBoxContainer}>
             <View style={{ flexDirection: 'row' }}>
               <Checkbox
@@ -117,19 +107,12 @@ const Signup = ({ navigation }) => {
           />
           <View>
             <OrSeparator text="or continue with" />
-            <View style={styles.socialBtnContainer}>
-              <SocialButton
-                icon={icons.appleLogo}
-                onPress={appleAuthHandler}
-                tintColor={COLORS.black}
-              />
-              <SocialButton
-                icon={icons.facebook}
-                onPress={facebookAuthHandler}
-              />
-              <SocialButton
-                icon={icons.google}
-                onPress={googleAuthHandler}
+            <View style={styles.button}>
+              <Button
+                  title="SMS"
+                  filled
+                  onPress={() => navigation.navigate("SignUpPhoneNumber")}
+                  style={styles.button}
               />
             </View>
           </View>

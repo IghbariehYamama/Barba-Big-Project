@@ -394,7 +394,6 @@ export default {
     bookmark2Outline,
     notificationBell,
     notificationBell2,
-    bookmarkOutline,
     filter,
     filter2,
     filter3,

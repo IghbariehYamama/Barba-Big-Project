@@ -8,6 +8,7 @@ import { launchImagePicker } from '../utils/ImagePickerHelper';
 import SettingsItem from '../components/SettingsItem';
 import RBSheet from "react-native-raw-bottom-sheet";
 import Button from '../components/Button';
+import { customer } from '../data'
 
 const Profile = ({ navigation }) => {
   const refRBSheet = useRef();
@@ -70,8 +71,8 @@ const Profile = ({ navigation }) => {
             <MaterialIcons name="edit" size={16} color={COLORS.white} />
           </TouchableOpacity>
         </View>
-        <Text style={[styles.title, { color: COLORS.greyscale900 }]}>Nathalie Erneson</Text>
-        <Text style={[styles.subtitle, { color: COLORS.greyscale900 }]}>nathalie_erneson@gmail.com</Text>
+        <Text style={[styles.title, { color: COLORS.greyscale900 }]}>{customer.name}</Text>
+        <Text style={[styles.subtitle, { color: COLORS.greyscale900 }]}>{customer.email}</Text>
       </View>
     )
   }

@@ -21,6 +21,7 @@ const SpecialistMessageCard = ({ name, position, avatar }) => {
                     <Text style={styles.phoneNumber}>{position}</Text>
                 </View>
             </View>
+            {/*
             <TouchableOpacity
                 onPress={() => { navigation.navigate("Inbox") }}
                 style={[styles.btn, {
@@ -31,7 +32,7 @@ const SpecialistMessageCard = ({ name, position, avatar }) => {
                     color: COLORS.white
                 }]}>Message</Text>
             </TouchableOpacity>
-
+            */}
         </View>
     )
 };

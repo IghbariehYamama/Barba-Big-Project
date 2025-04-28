@@ -1,13 +1,51 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SIZES, icons, illustrations } from '../constants';
+import { COLORS, SIZES, icons, illustrations, appServer } from '../constants'
 import Header from '../components/Header';
 import { ScrollView } from 'react-native-virtualized-view';
 import Button from '../components/Button';
+import { customer } from '../data'
 
-const ReviewSummary = ({ navigation }) => {
+const ReviewSummary = ({ navigation, route }) => {
   const [modalVisible, setModalVisible] = useState(false);
+  const { date, time } = route.params;
+
+  const createAppointment = async () => {
+    try {
+      const appointmentData = {
+        businessId: "1",
+        serviceId: "1",
+        customerId: customer.id,
+        employeeId: "2",
+        hour: time,
+        minute: 0,
+        day: date.slice(8, 10),
+        month: date.slice(6, 7),
+        year: date.slice(0, 4)
+      };
+      console.log(time);
+      console.log(date);
+      const response = await fetch(`https://${appServer.serverName}/customers/bookings/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(appointmentData)
+      });
+
+      const data = await response.json();
+      console.log(data);
+      if (response.ok) {
+        setModalVisible(true); // Show confirmation modal
+      } else {
+        Alert.alert("Error", data.message || "Failed to create appointment.");
+      }
+    } catch (error) {
+      Alert.alert("Network Error", "Please check your connection and try again.");
+    }
+  };
+
 
   // Render modal
   const renderModal = () => {
@@ -162,11 +200,15 @@ const ReviewSummary = ({ navigation }) => {
 
         </ScrollView>
         <Button
-          title="Continue"
-          onPress={() => setModalVisible(true)}
-          filled
-          style={styles.continueBtn}
+            title="Continue"
+            onPress={() => {
+              createAppointment();
+              setModalVisible(true);
+            }}
+            filled
+            style={styles.continueBtn}
         />
+
       </View>
       {renderModal()}
     </SafeAreaView>

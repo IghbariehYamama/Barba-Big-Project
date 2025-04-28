@@ -1,19 +1,33 @@
-import React, { useState } from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
-import { COLORS } from '../constants';
+import React, { useEffect, useState } from 'react'
+import { View, TouchableOpacity, Text, Alert } from 'react-native'
+import { appServer, COLORS } from '../constants'
 import UpcomingBookings from './UpcomingBookings';
 import CompletedBookings from './CompletedBookings';
 import CancelledBookings from './CancelledBookings';
+import { customer } from '../data'
+import {upcomingBookings} from '../data/index'
 
-const TabContent = ({ tab }) => {
-    // Your tab content components for "Upcoming", "Completed", and "Cancelled"
+
+const TabContent = ({ tab, bookings }) => {
+    let filteredBookings = [];
+
+    // Filter bookings based on their status
     switch (tab) {
         case 'Upcoming':
-            return <><UpcomingBookings/></>;
+            filteredBookings = bookings.filter(
+                (booking) => booking.status === 'UPCOMING'
+            );
+            return <UpcomingBookings bookings={filteredBookings} />;
         case 'Completed':
-            return <><CompletedBookings/></>;
+            filteredBookings = bookings.filter(
+                (booking) => booking.status === 'COMPLETED'
+            );
+            return <CompletedBookings bookings={filteredBookings} />;
         case 'Cancelled':
-            return <><CancelledBookings/></>;
+            filteredBookings = bookings.filter(
+                (booking) => booking.status === 'CANCELLED'
+            );
+            return <CancelledBookings bookings={filteredBookings} />;
         default:
             return null;
     }
@@ -23,6 +37,46 @@ const Tabs = ['Upcoming', 'Completed', 'Cancelled'];
 
 const BookingTabSelection = () => {
     const [selectedTab, setSelectedTab] = useState('Upcoming');
+    const [bookings, setBookings] = useState([]);
+
+    useEffect(() => {
+        const fetchBookings = async () => {
+            try {
+                const response = await fetch(
+                    `https://${appServer.serverName}/customers/get/bookings/all/${customer.id}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(data);
+                    setBookings(data); // Assuming data is an array of bookings
+                } else {
+                    Alert.alert(
+                        'Error',
+                        'Failed to fetch bookings. Please try again.'
+                    );
+                }
+            } catch (error) {
+                console.error('Failed to fetch bookings:', error);
+                Alert.alert(
+                    'Error',
+                    'An error occurred while fetching bookings.'
+                );
+            }
+        };
+
+        fetchBookings();
+
+        return () => {
+            setBookings([]);
+        };
+    }, []);
+
 
     const renderItem = (item) => (
         <TouchableOpacity
@@ -59,7 +113,7 @@ const BookingTabSelection = () => {
             ))}
         </View>
         <View style={{ marginTop: 20 }}>
-                <TabContent tab={selectedTab} />
+                <TabContent tab={selectedTab} bookings={bookings} />
             </View>
         </View>
     );

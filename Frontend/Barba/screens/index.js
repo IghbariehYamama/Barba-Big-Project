@@ -3,7 +3,9 @@ import Onboarding2 from "./Onboarding2";
 import Onboarding3 from "./Onboarding3";
 import Onboarding4 from "./Onboarding4";
 import Login from "./Login";
+import LoginPhoneNumber from "./LoginPhoneNumber";
 import Signup from "./Signup";
+import SignUpPhoneNumber from "./SignUpPhoneNumber";
 import ChangeEmail from "./ChangeEmail";
 import ChangePassword from "./ChangePassword";
 import ChangePIN from "./ChangePIN";
@@ -62,7 +64,9 @@ export {
     Onboarding3,
     Onboarding4,
     Login,
+    LoginPhoneNumber,
     Signup,
+    SignUpPhoneNumber,
     ChangeEmail,
     ChangePassword,
     ChangePIN,

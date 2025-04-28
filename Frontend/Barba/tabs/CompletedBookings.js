@@ -1,11 +1,11 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
-import React from 'react';
-import { completedBookings } from '../data';
-import { SIZES, COLORS } from '../constants';
+import React, { useState } from 'react'
+import { SIZES, COLORS, images } from '../constants'
 import { useNavigation } from '@react-navigation/native';
 
-const CompletedBookings = () => {
+const CompletedBookings = ({ bookings }) => {
   const navigation = useNavigation();
+  const [completedBookings, setCompletedBookings] = useState(bookings);
 
   return (
     <View style={[styles.container, { 
@@ -32,27 +32,30 @@ const CompletedBookings = () => {
             }]} />
             <View style={styles.detailsContainer}>
                 <Image
-                  source={item.image}
-                  resizeMode='cover'
-                  style={styles.barberImage}
+                    source={images.salon5}
+                    resizeMode='cover'
+                    style={styles.barberImage}
                 />
-                <View style={styles.detailsRightContainer}>
-                  <Text style={styles.name}>{item.name}</Text>
-                  <Text style={[styles.address, { 
-                     color: COLORS.grayscale700,
-                  }]}>{item.address}</Text>
-                  <Text style={[styles.serviceTitle, { 
-                     color: COLORS.grayscale700,
-                  }]}>Services:</Text>
-                  <Text style={styles.serviceText}>{item.services.join(", ")}</Text>
-                </View>
+              <View style={styles.detailsRightContainer}>
+                <Text style={[styles.name, {
+                  color: COLORS.greyscale900
+                }]}>{item.business.name}</Text>
+                <Text style={[styles.serviceTitle, {
+                  color: COLORS.grayscale700,
+                }]}>Employee:</Text>
+                <Text style={styles.serviceText}>{item.employee.name}</Text>
+                <Text style={[styles.serviceTitle, {
+                  color: COLORS.grayscale700,
+                }]}>Service:</Text>
+                <Text style={styles.serviceText}>{item.service.name}</Text>
+              </View>
             </View>
             <View style={[styles.separateLine, {
               backgroundColor: COLORS.grayscale200,
             }]} />
-            <TouchableOpacity 
-               onPress={()=>navigation.navigate("EReceipt")}
-               style={styles.receiptBtn}>
+            <TouchableOpacity
+                onPress={()=>navigation.navigate("EReceipt", { bookingID: item.id })}
+                style={styles.receiptBtn}>
               <Text style={styles.receiptBtnText}>View E-Receipt</Text>
             </TouchableOpacity>
           </TouchableOpacity>

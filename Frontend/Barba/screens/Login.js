@@ -1,15 +1,15 @@
 import { View, Text, StyleSheet, ScrollView, Image, Alert, TouchableOpacity } from 'react-native';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SIZES, icons, images } from '../constants';
+import { COLORS, SIZES, icons, images, appServer } from '../constants';
 import Header from '../components/Header';
 import { reducer } from '../utils/reducers/formReducers';
 import { validateInput } from '../utils/actions/formActions';
 import Input from '../components/Input';
 import Checkbox from 'expo-checkbox';
 import Button from '../components/Button';
-import SocialButton from '../components/SocialButton';
-import OrSeparator from '../components/OrSeparator';
+import OrSeparator from '../components/OrSeparator'
+import { customer } from '../data/index';
 
 const isTestMode = true
 
@@ -47,6 +47,7 @@ const Login = ({ navigation }) => {
   }, [error])
 
   // implementing apple authentication
+  /*
   const appleAuthHandler = () => {
     console.log("Apple Authentication")
   };
@@ -60,7 +61,7 @@ const Login = ({ navigation }) => {
   const googleAuthHandler = () => {
     console.log("Google Authentication")
   };
-
+*/
   return (
     <SafeAreaView style={styles.area}>
       <View style={styles.container}>
@@ -106,22 +107,80 @@ const Login = ({ navigation }) => {
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.privacy, {
                     color: COLORS.black
-                  }]}>Remenber me</Text>
+                  }]}>Remember me</Text>
                 </View>
               </View>
             </View>
-            <Button
+          <Button
               title="Login"
               filled
-              onPress={() => navigation.navigate("Main")}
+              onPress={async () => {
+                setIsLoading(true); // Show a loading indicator
+                setError(null); // Reset error state
+
+                try {
+                  if (isTestMode) {
+                    navigation.navigate("Main");
+                  }
+                  const response = await fetch(`https://${appServer.serverName}/contactsapi/login`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      email: formState.inputValues.email,
+                      password: formState.inputValues.password,
+                    }),
+                  });
+
+                  if (!response.ok) {
+                    throw new Error('Failed to authenticate. Please check your credentials.');
+                  }
+
+                  const result = await response.json();
+
+                  if (data.success) {
+
+                    // Create a customer object upon successful verification
+                    customer = {
+                      id: result.userId,
+                      fullName: result.fullName,
+                      email: result.email,
+                      nickname: result.nickname,
+                      phoneNumber: `${selectedArea.callingCode}${phoneNumber}`,
+                      verified: true,
+                    };
+
+                    Alert.alert('Login Successful', 'Welcome back!');
+                    navigation.navigate("Main");
+                  } else {
+                    Alert.alert('Login Failed', data.message || 'Invalid email or password.');
+                  }
+                } catch (err) {
+                  setError(err.message);
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
               style={styles.button}
-            />
-            <TouchableOpacity
+          />
+          <View>
+            <OrSeparator text="or continue with" />
+            <View style={styles.button}>
+              <Button
+                  title="SMS"
+                  filled
+                  onPress={() => navigation.navigate("LoginPhoneNumber")}
+                  style={styles.button}
+              />
+            </View>
+          </View>
+          {/*<TouchableOpacity
              onPress={()=>navigation.navigate("ForgotPasswordMethods")}>
               <Text style={styles.forgotPasswordBtnText}>Forgot the password?</Text>
-            </TouchableOpacity>
-            <View>
-             
+            </TouchableOpacity>*/}
+          {/*<View>
+
               <OrSeparator text="or continue with"/>
               <View style={styles.socialBtnContainer}>
                 <SocialButton
@@ -138,7 +197,7 @@ const Login = ({ navigation }) => {
                   onPress={googleAuthHandler}
                 />
               </View>
-            </View>
+            </View>*/}
         </ScrollView>
         <View style={styles.bottomContainer}>
             <Text style={[styles.bottomLeft, { 

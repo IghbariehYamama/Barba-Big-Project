@@ -49,6 +49,7 @@ const BottomTabNavigation = () => {
                     },
                 }}
             />
+            {/*
              <Tab.Screen
                 name="Explore"
                 component={Explore}
@@ -74,7 +75,7 @@ const BottomTabNavigation = () => {
                     },
                 }}
             />
-
+            */}
         <Tab.Screen
                 name="MyBooking"
                 component={MyBooking}
@@ -100,7 +101,7 @@ const BottomTabNavigation = () => {
                     },
                 }}
             />
-
+            {/*
             <Tab.Screen
                 name="Inbox"
                 component={Inbox}
@@ -126,6 +127,7 @@ const BottomTabNavigation = () => {
                     },
                 }}
             />
+            */}
              <Tab.Screen
                 name="Profile"
                 component={Profile}

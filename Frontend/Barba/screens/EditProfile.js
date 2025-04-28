@@ -12,6 +12,7 @@ import { getFormatedDate } from "react-native-modern-datepicker";
 import DatePickerModal from '../components/DatePickerModal';
 import Button from '../components/Button';
 import RNPickerSelect from 'react-native-picker-select';
+import { customer } from '../data'
 
 const isTestMode = true;
 
@@ -41,6 +42,8 @@ const EditProfile = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [openStartDatePicker, setOpenStartDatePicker] = useState(false);
   const [selectedGender, setSelectedGender] = useState('');
+  const [genderDropdownVisible, setGenderDropdownVisible] = useState(false);
+  const genders = ["Male", "Female"];
 
   const genderOptions = [
     { label: 'Male', value: 'male' },
@@ -143,6 +146,7 @@ const EditProfile = ({ navigation }) => {
         </TouchableOpacity>
       )
     }
+
     return (
       <Modal
         animationType="slide"
@@ -200,115 +204,92 @@ const EditProfile = ({ navigation }) => {
           </View>
           <View>
             <Input
-              id="fullName"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['fullName']}
-              placeholder="Full Name"
-              placeholderTextColor={COLORS.black}
+                id="name"
+                onInputChanged={inputChangedHandler}
+                errorText={formState.inputValidities['name']}
+                placeholder="Name"
+                value={customer.name}
+                placeholderTextColor={COLORS.gray}
+                editable={true}
             />
             <Input
-              id="nickname"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['nickname']}
-              placeholder="Nickname"
-              placeholderTextColor={COLORS.black}
+                id="email"
+                onInputChanged={inputChangedHandler}
+                errorText={formState.inputValidities['email']}
+                placeholder="email"
+                keyboardType="email-address"
+                value={customer.email}
+                placeholderTextColor={COLORS.gray}
+                editable={true}
             />
             <Input
-              id="email"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['email']}
-              placeholder="Email"
-              placeholderTextColor={COLORS.black}
-              keyboardType="email-address" />
+                id="phone"
+                onInputChanged={inputChangedHandler}
+                errorText={formState.inputValidities['phone']}
+                placeholder="Phone Number"
+                placeholderTextColor={COLORS.gray}
+                value={customer.phone}
+                editable={true}
+            />
+            <Input
+                id="password"
+                onInputChanged={inputChangedHandler}
+                errorText={formState.inputValidities['password']}
+                placeholder="Password"
+                placeholderTextColor={COLORS.gray}
+                secureTextEntry={true} />
+
+            {/* Dropdown trigger */}
+            <TouchableOpacity
+                style={[styles.inputBtn, { marginVertical: 12 }]}
+                onPress={() => setGenderDropdownVisible(true)}
+            >
+              <Text style={{ color: COLORS.gray, ...FONTS.body4 }}>
+                {selectedGender || "Select Gender"}
+              </Text>
+              <Feather name="chevron-down" size={20} color={COLORS.gray} />
+            </TouchableOpacity>
+
+            {/* Dropdown modal */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={genderDropdownVisible}
+            >
+              <TouchableWithoutFeedback onPress={() => setGenderDropdownVisible(false)}>
+                <View style={styles.modalOverlay}>
+                  <View style={styles.dropdownContainer}>
+                    <FlatList
+                        data={genders}
+                        keyExtractor={(item) => item}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                id = "gender"
+                                style={styles.dropdownItem}
+                                onPress={inputChangedHandler}
+                            >
+                              <Text style={styles.dropdownItemText}>{item}</Text>
+                            </TouchableOpacity>
+                        )}
+                    />
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
             <View style={{
               width: SIZES.width - 32
             }}>
               <TouchableOpacity
-                style={[styles.inputBtn, {
-                  backgroundColor: COLORS.greyscale500,
-                  borderColor: COLORS.greyscale500,
-                }]}
-                onPress={handleOnPressStartDate}
+                  style={[styles.inputBtn, {
+                    backgroundColor: COLORS.greyscale500,
+                    borderColor: COLORS.greyscale500,
+                  }]}
+                  onPress={handleOnPressStartDate}
               >
-                <Text style={{ ...FONTS.body4, color: COLORS.grayscale400 }}>{startedDate}</Text>
+                <Text style={{ ...FONTS.body4, color: COLORS.grayscale400 }}>{customer.dateOfBirth}</Text>
                 <Feather name="calendar" size={24} color={COLORS.grayscale400} />
               </TouchableOpacity>
             </View>
-            <View style={[styles.inputContainer, {
-              backgroundColor: COLORS.greyscale500,
-              borderColor: COLORS.greyscale500,
-            }]}>
-              <TouchableOpacity
-                style={styles.selectFlagContainer}
-                onPress={() => setModalVisible(true)}>
-                <View style={{ justifyContent: "center" }}>
-                  <Image
-                    source={icons.down}
-                    resizeMode='contain'
-                    style={styles.downIcon}
-                  />
-                </View>
-                <View style={{ justifyContent: "center", marginLeft: 5 }}>
-                  <Image
-                    source={{ uri: selectedArea?.flag }}
-                    contentFit="contain"
-                    style={styles.flagIcon}
-                  />
-                </View>
-                <View style={{ justifyContent: "center", marginLeft: 5 }}>
-                  <Text style={{ color: "#111", fontSize: 12 }}>{selectedArea?.callingCode}</Text>
-                </View>
-              </TouchableOpacity>
-              {/* Phone Number Text Input */}
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your phone number"
-                placeholderTextColor={COLORS.black}
-                selectionColor="#111"
-                keyboardType="numeric"
-              />
-            </View>
-            <View>
-              <RNPickerSelect
-                placeholder={{ label: 'Select', value: '' }}
-                items={genderOptions}
-                onValueChange={(value) => handleGenderChange(value)}
-                value={selectedGender}
-                style={{
-                  inputIOS: {
-                    fontSize: 16,
-                    paddingHorizontal: 10,
-                    borderRadius: 4,
-                    color: COLORS.greyscale600,
-                    paddingRight: 30,
-                    height: 52,
-                    width: SIZES.width - 32,
-                    alignItems: 'center',
-                    backgroundColor: COLORS.greyscale500,
-                    borderRadius: 16
-                  },
-                  inputAndroid: {
-                    fontSize: 16,
-                    paddingHorizontal: 10,
-                    borderRadius: 8,
-                    color: COLORS.greyscale600,
-                    paddingRight: 30,
-                    height: 52,
-                    width: SIZES.width - 32,
-                    alignItems: 'center',
-                    backgroundColor: COLORS.greyscale500,
-                    borderRadius: 16
-                  },
-                }}
-              />
-            </View>
-            <Input
-              id="occupation"
-              onInputChanged={inputChangedHandler}
-              errorText={formState.inputValidities['occupation']}
-              placeholder="Occupation"
-              placeholderTextColor={COLORS.black}
-            />
           </View>
         </ScrollView>
       </View>
@@ -456,7 +437,6 @@ const pickerSelectStyles = StyleSheet.create({
     width: SIZES.width - 32,
     alignItems: 'center',
     backgroundColor: COLORS.greyscale500,
-    borderRadius: 16
   },
   inputAndroid: {
     fontSize: 16,
@@ -468,7 +448,6 @@ const pickerSelectStyles = StyleSheet.create({
     width: SIZES.width - 32,
     alignItems: 'center',
     backgroundColor: COLORS.greyscale500,
-    borderRadius: 16
   },
 });
 

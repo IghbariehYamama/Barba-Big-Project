@@ -1,5 +1,15 @@
 import { COLORS, icons, images } from "../constants";
 
+export let customer = {
+    id: "",
+    name: "",
+    email: "",
+    phone: "",
+    gender: "",
+    dateOfBirth: "",
+    verified: false,
+};
+
 export const friends = [
     {
         id: "1",
@@ -227,12 +237,10 @@ export const messsagesData = [
         lastMessage: 'I love you. see you soon baby',
         messageInQueue: 2,
         lastMessageTime: "12:25 PM",
-        isOnline: true,
     },
     {
         id: "2",
         fullName: "Anuska Sharma",
-        isOnline: false,
         userImg: images.user2,
         lastSeen: "2023-11-18T04:52:06.501Z",
         lastMessage: 'I Know. you are so busy man.',
@@ -249,12 +257,10 @@ export const messsagesData = [
         lastMessage: 'Ok, see u soon',
         messageInQueue: 0,
         lastMessageTime: "09:12 PM",
-        isOnline: true
     },
     {
         id: "4",
         fullName: "Shikhor Dhaon",
-        isOnline: false,
         userImg: images.user4,
         lastSeen: "2023-11-18T04:52:06.501Z",
         lastMessage: 'Great! Do you Love it.',
@@ -271,12 +277,10 @@ export const messsagesData = [
         lastMessage: 'Thank you !',
         messageInQueue: 2,
         lastMessageTime: "10:30 AM",
-        isOnline: true
     },
     {
         id: "6",
         fullName: "Jacksoon",
-        isOnline: false,
         userImg: images.user6,
         lastSeen: "2023-11-20T04:52:06.501Z",
         lastMessage: 'Do you want to go out dinner',
@@ -293,12 +297,10 @@ export const messsagesData = [
         lastMessage: 'Do you want to go out dinner',
         messageInQueue: 2,
         lastMessageTime: "11:05 PM",
-        isOnline: true
     },
     {
         id: "8",
         fullName: "Lucky Luck",
-        isOnline: false,
         userImg: images.user8,
         lastSeen: "2023-11-20T04:52:06.501Z",
         lastMessage: 'Can you share the design with me?',
@@ -315,7 +317,6 @@ export const messsagesData = [
         lastMessage: 'Tell me what you want?',
         messageInQueue: 0,
         lastMessageTime: "06:43 PM",
-        isOnline: true
     }
 ];
 

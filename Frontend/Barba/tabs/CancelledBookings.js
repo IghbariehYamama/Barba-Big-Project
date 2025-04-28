@@ -1,9 +1,13 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
-import React from 'react';
-import { cancelledBookings } from '../data';
-import { SIZES, COLORS } from '../constants';
+import React, { useState } from 'react'
+import { SIZES, COLORS, images } from '../constants'
 
-const CancelledBookings = () => {
+const CancelledBookings = ({ bookings }) => {
+  const [cancelledBookings, setCancelledBookings] = useState(bookings);
+
+  const manualFormatDate = (year, month, day, hour, minute) => {
+    return `${day}/${month}/${year} - ${hour}:${minute.toString().padStart(2, '0')}`;
+  };
 
   return (
     <View style={[styles.container, {
@@ -18,9 +22,9 @@ const CancelledBookings = () => {
             backgroundColor: COLORS.white,
           }]}>
             <View style={styles.dateContainer}>
-              <Text style={[styles.date, {
-                color: COLORS.greyscale900
-              }]}>{item.date}</Text>
+              <Text style={[styles.date, { color: COLORS.greyscale900 }]}>
+                {manualFormatDate(item.year, item.month, item.day, item.hour, item.minute)}
+              </Text>
               <View style={styles.statusContainer}>
                 <Text style={styles.status}>{item.status}</Text>
               </View>
@@ -30,21 +34,22 @@ const CancelledBookings = () => {
             }]} />
             <View style={styles.detailsContainer}>
               <Image
-                source={item.image}
-                resizeMode='cover'
-                style={styles.barberImage}
+                  source={images.salon5}
+                  resizeMode='cover'
+                  style={styles.barberImage}
               />
               <View style={styles.detailsRightContainer}>
                 <Text style={[styles.name, {
                   color: COLORS.greyscale900
-                }]}>{item.name}</Text>
-                <Text style={[styles.address, {
-                  color: COLORS.grayscale700,
-                }]}>{item.address}</Text>
+                }]}>{item.business.name}</Text>
                 <Text style={[styles.serviceTitle, {
                   color: COLORS.grayscale700,
-                }]}>Services:</Text>
-                <Text style={styles.serviceText}>{item.services.join(", ")}</Text>
+                }]}>Employee:</Text>
+                <Text style={styles.serviceText}>{item.employee.name}</Text>
+                <Text style={[styles.serviceTitle, {
+                  color: COLORS.grayscale700,
+                }]}>Service:</Text>
+                <Text style={styles.serviceText}>{item.service.name}</Text>
               </View>
             </View>
           </TouchableOpacity>
