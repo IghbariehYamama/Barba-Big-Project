@@ -15,15 +15,15 @@ const SalonDetailsGallery = ({ navigation }) => {
      * Render header
      */
     const [ourGallery, setOurGallery] = useState([]);
-    const { salonID } = useContext(SalonContext);
+    const { salonInfo } = useContext(SalonContext);
 
     useEffect(() => {
         const fetchOurGallery = async () => {
             try {
-                const response = await fetch(`https://${appServer.serverName}/businesses/photos/${salonID}/gallery/urls`);
+                const response = await fetch(`https://${appServer.serverName}/businesses/photos/${salonInfo.salonID}/gallery/urls`);
                 const data = await response.json();
                 console.log("data: " + data)
-                console.log("salonID: " + salonID)
+                console.log("salonInfo salonID: " + salonInfo.salonID)
                 if (Array.isArray(data)) {
                     const fullUrls = data.map(path => `https://${appServer.serverName}${path}`);
                     setOurGallery(fullUrls);
@@ -35,10 +35,10 @@ const SalonDetailsGallery = ({ navigation }) => {
                 console.error("Error fetching slider images:", error);
             }
         };
-        if (salonID) {
+        if (salonInfo) {
             fetchOurGallery();
         }
-    }, [salonID]);
+    }, [salonInfo]);
 
      const renderHeader = () => {
         return (

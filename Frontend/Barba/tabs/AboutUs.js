@@ -1,16 +1,33 @@
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react'
 import { COLORS, SIZES, FONTS, icons } from '../constants';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import Button from "../components/Button";
 import { useNavigation } from '@react-navigation/native';
 import { mapStandardStyle } from '../data/mapData';
+import { SalonContext } from '../components/SalonContext'
+import { Linking, Modal } from 'react-native';
+import { TouchableWithoutFeedback, Keyboard } from 'react-native';
 
 const AboutUs = () => {
     const [expanded, setExpanded] = useState(false);
     const navigation = useNavigation();
+    const { salonInfo } = useContext(SalonContext);
+    const [isModalVisible, setModalVisible] = useState(false);
 
-    const description = ` We specialize in providing top-notch haircuts, beard trims, and grooming services for gentlemen of all ages. Our skilled team of barbers is dedicated to delivering a personalized experience, ensuring that each client leaves feeling confident and stylish. With a cozy and inviting atmosphere, you'll feel right at home as soon as you step through our doors. Whether you're looking for a classic haircut or a modern style, we've got you covered.`;
+    const handleCall = () => {
+        Linking.openURL(`tel:${salonInfo.salonPhone}`);
+        setModalVisible(false);
+    };
+
+    const handleWhatsApp = () => {
+        let phone = salonInfo.salonPhone.replace(/\D/g, ''); // Remove non-digits
+        if (phone.startsWith('0')) {
+            phone = '+972' + phone.slice(1); // Replace first 0 with +972
+        }
+        Linking.openURL(`https://wa.me/${phone}`);
+        setModalVisible(false);
+    };
 
     const toggleExpanded = () => {
         setExpanded(!expanded);
@@ -20,7 +37,7 @@ const AboutUs = () => {
         <View>
             <Text style={[styles.description, { 
                 color: COLORS.grayscale700,
-            }]} numberOfLines={expanded ? undefined : 2}>{description}</Text>
+            }]} numberOfLines={expanded ? undefined : 2}>{salonInfo.aboutUs}</Text>
             <TouchableOpacity onPress={toggleExpanded}>
                 <Text style={styles.viewBtn}>
                     {expanded ? 'View Less' : 'View More'}
@@ -49,7 +66,12 @@ const AboutUs = () => {
             <Text style={[styles.subtitle, { 
                 color: COLORS.greyscale900,
             }]}>Contact Us</Text>
-            <Text style={styles.phoneNumber}>(406) 555-0120</Text>
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
+                <Text style={styles.phoneNumber}>
+                    {salonInfo.salonPhone}
+                </Text>
+            </TouchableOpacity>
+
 
             <View style={styles.viewContainer}>
                 <Text style={[styles.viewLeft, { 
@@ -68,7 +90,7 @@ const AboutUs = () => {
                 />
                 <Text style={[styles.locationText, { 
                     color: COLORS.grayscale700,
-                }]}>6993 Meadow Valley Terrace, New York</Text>
+                }]}>{salonInfo.salonLocation}</Text>
             </View>
 
             <View style={[styles.locationMapContainer, { 
@@ -121,6 +143,39 @@ const AboutUs = () => {
               style={styles.bookBtn}
               onPress={() => navigation.navigate("BookAppointment")}
             />
+
+
+            <Modal
+                transparent
+                visible={isModalVisible}
+                animationType="fade"
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+                    <View style={styles.modalOverlay}>
+                        <TouchableWithoutFeedback>
+                            <View style={styles.modalContainer}>
+                                <Text style={styles.modalTitle}>Contact via</Text>
+
+                                <TouchableOpacity style={styles.modalButton} onPress={handleWhatsApp}>
+                                    <Image source={icons.whatsapp} style={styles.modalIcon} />
+                                    <Text style={styles.modalButtonText}>Message on WhatsApp</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={styles.modalButton} onPress={handleCall}>
+                                    <Image source={icons.telephone} style={styles.modalIcon} />
+                                    <Text style={styles.modalButtonText}>Call</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
+                                    <Text style={styles.cancelText}>Cancel</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
+
         </View>
     )
 };
@@ -176,6 +231,55 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: COLORS.black,
         fontFamily: "bold"
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContainer: {
+        backgroundColor: COLORS.white,
+        borderRadius: 16,
+        padding: 24,
+        width: '85%',
+        alignItems: 'center',
+        elevation: 5,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontFamily: 'bold',
+        color: COLORS.greyscale900,
+        marginBottom: 20,
+    },
+    modalButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: COLORS.lightGray,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 10,
+        width: '100%',
+        marginBottom: 12,
+    },
+    modalIcon: {
+        width: 20,
+        height: 20,
+        marginRight: 12,
+        tintColor: COLORS.primary,
+    },
+    modalButtonText: {
+        fontSize: 16,
+        fontFamily: 'semiBold',
+        color: COLORS.primary,
+    },
+    cancelButton: {
+        marginTop: 10,
+    },
+    cancelText: {
+        fontSize: 14,
+        color: COLORS.grayscale700,
+        fontFamily: 'medium',
     },
     viewRight: {
         fontSize: 14,

@@ -4,7 +4,7 @@ import { appServer, COLORS } from '../constants'
 import { SalonContext } from './SalonContext'
 
 const SpecialistCard = ({ id, name, position, onPress, isSelected }) => {
-  const { salonID } = useContext(SalonContext);
+  const { salonInfo } = useContext(SalonContext);
   const handlePress = () => {
     onPress(id);
   };
@@ -15,7 +15,7 @@ const SpecialistCard = ({ id, name, position, onPress, isSelected }) => {
         backgroundColor: COLORS.white,
       }]}>
         <Image
-            source={{uri: `https://${appServer.serverName}/businesses/photos/${salonID}/employees/${id}`}}
+            source={{uri: `https://${appServer.serverName}/businesses/photos/${salonInfo.salonID}/employees/${id}`}}
           resizeMode='contain'
           style={styles.avatar}
         />

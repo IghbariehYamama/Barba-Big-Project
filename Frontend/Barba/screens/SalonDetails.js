@@ -16,27 +16,17 @@ import { SalonContext } from '../components/SalonContext'; // Adjust path
 
 const SalonDetails = ({ route, navigation }) => {
   const refRBSheet = useRef();
-  const { salonID, setSalonID } = useContext(SalonContext);
+  const { salonInfo, setSalonInfo } = useContext(SalonContext);
   const [sliderImages, setSliderImages] = useState([]);
   const [isOpen, setIsOpen] = useState(false); // moved here so it's controlled by real data
-  const [salonInfo, setSalonInfo] = useState({
-    salonName: '',
-    salonLocation: '',
-    salonRating: '',
-    facebook: '',
-    instagram: '',
-    waze: '',
-    employees: []
-  });
-
   const daysOfWeek = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
   const today = new Date();
   const todayDayName = daysOfWeek[today.getDay()];
 
   useEffect(() => {
     if (isTestMode) {
-      setSalonID("testID");
       setSalonInfo({
+        salonID: "testID",
         salonName: "testName",
         salonLocation: "testLocation",
         salonRating: "5.0",
@@ -54,8 +44,11 @@ const SalonDetails = ({ route, navigation }) => {
           console.log(data);
 
           setSalonInfo({
+            salonID: route.params.salonID,
             salonName: data.name,
             salonLocation: data.location,
+            salonPhone: data.phone,
+            aboutUs: data.aboutUs,
             salonRating: data.rating,
             facebook: data.facebook,
             instagram: data.instagram,
@@ -91,7 +84,6 @@ const SalonDetails = ({ route, navigation }) => {
             setIsOpen(false);
           }
 
-          setSalonID(route.params.salonID);
         } catch (error) {
           console.error("Error fetching salon data:", error);
         }
@@ -120,10 +112,10 @@ const SalonDetails = ({ route, navigation }) => {
       }
     };
 
-    if (salonID) {
+    if (salonInfo) {
       fetchSliderImages();
     }
-  }, [salonID]);
+  }, [salonInfo]);
 
 
   // Slider images
@@ -283,7 +275,7 @@ const SalonDetails = ({ route, navigation }) => {
           />
         </View>
 
-        <TabSelection salonID={salonID}/>
+        <TabSelection salonID={salonInfo.salonID}/>
       </View>
     )
   }

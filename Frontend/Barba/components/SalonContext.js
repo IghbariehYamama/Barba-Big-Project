@@ -4,10 +4,19 @@ import { Text } from 'react-native'
 export const SalonContext = createContext();
 
 export const SalonProvider = ({ children }) => {
-    const [salonID, setSalonID] = useState(null);
+    const [salonInfo, setSalonInfo] = useState({
+        salonID: '',
+        salonName: '',
+        salonLocation: '',
+        salonRating: '',
+        facebook: '',
+        instagram: '',
+        waze: '',
+        employees: []
+    });
 
     return (
-        <SalonContext.Provider value={{ salonID, setSalonID }}>
+        <SalonContext.Provider value={{ salonInfo, setSalonInfo }}>
             {children}
         </SalonContext.Provider>
     );

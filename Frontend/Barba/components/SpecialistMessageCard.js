@@ -6,13 +6,13 @@ import { SalonContext } from './SalonContext'
 
 const SpecialistMessageCard = ({ name, position, employeeId }) => {
     const navigation = useNavigation();
-    const { salonID } = useContext(SalonContext);
+    const { salonInfo } = useContext(SalonContext);
 
     return (
         <View style={styles.container}>
             <View style={styles.leftContainer}>
                 <Image
-                    source={{uri: `https://${appServer.serverName}/businesses/photos/${salonID}/employees/${employeeId}`}}
+                    source={{uri: `https://${appServer.serverName}/businesses/photos/${salonInfo.salonID}/employees/${employeeId}`}}
                     resizeMode='contain'
                     style={styles.avatar}
                 />
