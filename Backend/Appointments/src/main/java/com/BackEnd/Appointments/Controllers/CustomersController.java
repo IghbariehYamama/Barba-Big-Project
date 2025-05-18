@@ -1,7 +1,7 @@
 package com.BackEnd.Appointments.Controllers;
 
-import com.BackEnd.Appointments.BLs.CustomerBL;
-import com.BackEnd.Appointments.DAOs.*;
+import com.BackEnd.Appointments.Services.CustomerService;
+import com.BackEnd.Appointments.Repositories.*;
 import com.BackEnd.Appointments.DTOs.*;
 import com.BackEnd.Appointments.Entities.Booking;
 import com.BackEnd.Appointments.Entities.Customer;
@@ -11,7 +11,6 @@ import com.BackEnd.Appointments.Exceptions.CustomerNotFoundException;
 import com.BackEnd.Appointments.Exceptions.PasswordNotMatchException;
 import com.BackEnd.Appointments.Utils.PasswordUtils;
 import com.BackEnd.Appointments.Utils.VerificationCode;
-import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,22 +27,22 @@ import java.util.Map;
 @Validated
 public class CustomersController {
     @Autowired
-    private CustomerBL customerBL;
+    private CustomerService customerService;
     @Autowired
-    private BookingDAO bookingDAO;
+    private BookingRepository bookingDAO;
     @Autowired
-    private CustomerDAO customerDAO;
+    private CustomerRepository customerRepository;
     @Autowired
-    private BusinessDAO businessDAO;
+    private BusinessRepository businessRepository;
     @Autowired
-    private EmployeeDAO employeeDAO;
+    private EmployeeRepository employeeRepository;
     @Autowired
-    private ServiceDAO serviceDAO;
+    private ServiceRepository serviceRepository;
     //GET
 
     @GetMapping("/get/{id}")
     public ResponseEntity<CustomerGetDTO> getCustomerById(@PathVariable Integer id) throws CustomerNotFoundException {
-        Customer customer = this.customerBL.getCustomerByID(id);
+        Customer customer = this.customerService.getCustomerByID(id);
         CustomerGetDTO customerDTO = new CustomerGetDTO(customer);
         return ResponseEntity.ok(customerDTO);
     }
@@ -52,9 +51,9 @@ public class CustomersController {
         boolean res = false;
 
         if (request.containsKey("email")) {
-            res = !customerBL.existsCustomerByEmail(request.get("email"));
+            res = !customerService.existsCustomerByEmail(request.get("email"));
         } else if (request.containsKey("phoneNumber")) {
-            res = !customerBL.existsCustomerByPhone(request.get("phoneNumber"));
+            res = !customerService.existsCustomerByPhone(request.get("phoneNumber"));
             String code = VerificationCode.generateCode(request.get("phoneNumber"));
             System.out.println("Your verification code is: "+ code);
             // Assume sendSMS is a method that sends the SMS
@@ -68,7 +67,7 @@ public class CustomersController {
     }
     @GetMapping("/get/{email}/{password}")
     public ResponseEntity<CustomerGetDTO> SignInByEmail(@PathVariable String email ,@PathVariable String password) throws CustomerNotFoundException, PasswordNotMatchException {
-        Customer customer = this.customerBL.getCustomerByEmail(email);
+        Customer customer = this.customerService.getCustomerByEmail(email);
         if(!PasswordUtils.verifyPassword(password, customer.getPassword())) {
             throw new PasswordNotMatchException();
         }
@@ -78,7 +77,7 @@ public class CustomersController {
     @PostMapping("/signIn/phone")
     public ResponseEntity<String> signInByPhone(@RequestBody Map<String, String> request) throws CustomerNotFoundException {
         String phone = request.get("phoneNumber");
-        if(!customerBL.existsCustomerByPhone(phone)) {
+        if(!customerService.existsCustomerByPhone(phone)) {
             throw new CustomerNotFoundException();
         }
         String code = VerificationCode.generateCode(phone);
@@ -92,7 +91,7 @@ public class CustomersController {
         String phone = request.get("phoneNumber");
         String code = request.get("code");
 
-        Customer customer = this.customerBL.getCustomerByPhone(phone);
+        Customer customer = this.customerService.getCustomerByPhone(phone);
         ResponseEntity<String> verify= verifyCode(Map.of("phoneNumber", phone, "code", code));
         if(verify.getStatusCode() == HttpStatus.OK) {
             UserGetDTO userDTO = new UserGetDTO(customer);
@@ -121,7 +120,7 @@ public class CustomersController {
     }
     @GetMapping("/get/bookings/all/{customerId}")
     public List<BookingGetDTO> getAllCustomerBookings(@PathVariable Integer customerId) {
-        List<Booking> bookings = this.customerBL.getAllCustomerBookings(customerId);
+        List<Booking> bookings = this.customerService.getAllCustomerBookings(customerId);
         return BookingGetDTO.toDTO(bookings);
     }
 
@@ -135,13 +134,13 @@ public class CustomersController {
                 user.getPhone(),
                 user.getDateOfBirth(),
                 user.getGender());
-        customer = this.customerBL.addCustomer(customer);
+        customer = this.customerService.addCustomer(customer);
         return ResponseEntity.ok(customer.getId());
     }
     @PutMapping("/update")
     public ResponseEntity<UserGetDTO> updateCustomer(@RequestBody  @Valid UserGetDTO userDTO) throws CustomerAlreadyExistException, CustomerNotFoundException {
-        Customer customer = this.customerBL.getCustomerByID(userDTO.getId());
-        this.customerBL.updateCustomer(customer);
+        Customer customer = this.customerService.getCustomerByID(userDTO.getId());
+        this.customerService.updateCustomer(customer);
         return ResponseEntity.ok(userDTO);
     }
 
@@ -149,40 +148,40 @@ public class CustomersController {
     @PostMapping("/bookings/add")
     public BookingGetDTO addBooking(@RequestBody BookingDTO booking) {
         Booking newBooking = new Booking();
-        newBooking.setCustomer(customerDAO.findById(booking.getCustomerId()).get());
-        newBooking.setBusiness(businessDAO.findById(booking.getBusinessId()).get());
-        newBooking.setEmployee(employeeDAO.findById(booking.getEmployeeId()).get());
-        newBooking.setService(serviceDAO.findById(booking.getServiceId()).get());
+        newBooking.setCustomer(customerRepository.findById(booking.getCustomerId()).get());
+        newBooking.setBusiness(businessRepository.findById(booking.getBusinessId()).get());
+        newBooking.setEmployee(employeeRepository.findById(booking.getEmployeeId()).get());
+        newBooking.setService(serviceRepository.findById(booking.getServiceId()).get());
         newBooking.setBookingTimestamp(LocalDateTime.now());
         newBooking.setChosenBookingTime(LocalDateTime.of(booking.getYear(),booking.getMonth(),booking.getDay(),booking.getHour(),booking.getMinute()));
         newBooking.setStatus(BookingStatus.UPCOMING);
-        newBooking = this.customerBL.addBooking(newBooking);
+        newBooking = this.customerService.addBooking(newBooking);
         return new BookingGetDTO(newBooking);
     }
     @PostMapping("/bookings/status/update")
     public ResponseEntity<BookingGetDTO> updateBooking(@RequestBody BookingStatusDTO updatedBookingStatus) {
         Booking booking = bookingDAO.findById(updatedBookingStatus.getBookingId()).get();
         booking.setStatus(updatedBookingStatus.getBookingStatus());
-        booking  = this.customerBL.updateBooking(booking);
+        booking  = this.customerService.updateBooking(booking);
         return ResponseEntity.ok(new BookingGetDTO(booking));
     }
     @PostMapping("/bookings/status/cancel")
     public ResponseEntity<String> cancelBooking(@RequestBody int bookingId) {
         Booking booking = bookingDAO.findById(bookingId);
         booking.setStatus(BookingStatus.CANCELLED);
-        this.customerBL.updateBooking(booking);
+        this.customerService.updateBooking(booking);
         return ResponseEntity.ok("Cancelled!");
     }
 
     //DELETE
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteCustomer(@PathVariable Integer id) throws CustomerNotFoundException {
-        this.customerBL.deleteCustomer(id);
+        this.customerService.deleteCustomer(id);
         return ResponseEntity.ok("Customer with ID " + id + " has been deleted successfully.");
     }
     @DeleteMapping("bookings/delete/{id}")
     public ResponseEntity<String> deleteBooking(@PathVariable Integer id) throws CustomerNotFoundException {
-        this.customerBL.deleteBooking(id);
+        this.customerService.deleteBooking(id);
         return ResponseEntity.ok("Booking with ID " + id + " has been deleted successfully.");
     }
 

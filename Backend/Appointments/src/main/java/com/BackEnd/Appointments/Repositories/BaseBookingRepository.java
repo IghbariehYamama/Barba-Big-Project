@@ -1,4 +1,4 @@
-package com.BackEnd.Appointments.DAOs;
+package com.BackEnd.Appointments.Repositories;
 import com.BackEnd.Appointments.Entities.*;
 import com.BackEnd.Appointments.Enums.BookingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @NoRepositoryBean
-public interface BaseBookingDAO<T extends BaseBooking> extends JpaRepository<T, Integer> {
+public interface BaseBookingRepository<T extends BaseBooking> extends JpaRepository<T, Integer> {
     // Common queries for all bookings
     List<T> findByStatus(BookingStatus status);
     Booking findById(int id);

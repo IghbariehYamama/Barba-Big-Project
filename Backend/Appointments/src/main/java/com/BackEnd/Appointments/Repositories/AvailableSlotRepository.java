@@ -1,12 +1,14 @@
-package com.BackEnd.Appointments.DAOs;
+package com.BackEnd.Appointments.Repositories;
 
 import com.BackEnd.Appointments.Entities.AvailableSlot;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface AvailableSlotDAO extends JpaRepository<AvailableSlot, Integer> {
+@Repository
+public interface AvailableSlotRepository extends JpaRepository<AvailableSlot, Integer> {
     List<AvailableSlot> findByEmployeeIdAndSlotBetween(Integer employeeId, LocalDateTime start, LocalDateTime end);
     List<AvailableSlot> findByBusinessIdAndServiceIdAndSlotBetween(
             Integer businessId, Integer serviceId, LocalDateTime start, LocalDateTime end);

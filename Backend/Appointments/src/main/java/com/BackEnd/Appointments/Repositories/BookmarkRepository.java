@@ -1,4 +1,4 @@
-package com.BackEnd.Appointments.DAOs;
+package com.BackEnd.Appointments.Repositories;
 
 import com.BackEnd.Appointments.Entities.Bookmark;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface BookmarkDAO extends JpaRepository<Bookmark, Integer> {
+public interface BookmarkRepository extends JpaRepository<Bookmark, Integer> {
     // Find all bookmarks for a specific customer
     List<Bookmark> findByCustomerId(Integer customerId);
 
