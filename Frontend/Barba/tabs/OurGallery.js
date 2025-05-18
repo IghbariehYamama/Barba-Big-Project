@@ -1,9 +1,9 @@
 import { FlatList, Image, StyleSheet, View } from 'react-native';
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react'
 import SubHeaderItem from '../components/SubHeaderItem';
-import { COLORS, SIZES } from '../constants';
-import { ourGallery } from '../data';
+import { appServer, COLORS, SIZES } from '../constants'
 import { useNavigation } from '@react-navigation/native';
+import { SalonContext } from '../components/SalonContext'
 
 const numColumns = 3;
 const screenWidth = SIZES.width -48;
@@ -11,9 +11,36 @@ const itemWidth = screenWidth / numColumns;
 
 const OurGallery = () => {
     const navigation = useNavigation();
+    const [ourGallery, setOurGallery] = useState([]);
+    const { salonInfo } = useContext(SalonContext);
+
+    useEffect(() => {
+        const fetchOurGallery = async () => {
+            try {
+                const response = await fetch(`https://${appServer.serverName}/businesses/photos/${salonInfo.salonID}/gallery/urls`);
+                const data = await response.json();
+                console.log("data: " + data)
+                console.log("salonInfo salonID: " + salonInfo.salonID)
+                if (Array.isArray(data)) {
+                    const fullUrls = data.map(path => `https://${appServer.serverName}${path}`);
+                    setOurGallery(fullUrls);
+                } else {
+                    console.warn("Unexpected data format for slider images:", data);
+                    setOurGallery([]);
+                }
+                console.log(ourGallery)
+            } catch (error) {
+                console.error("Error fetching slider images:", error);
+            }
+        };
+        if (salonInfo) {
+            fetchOurGallery();
+        }
+    }, [salonInfo]);
+
 
     const renderItem = ({ item }) => (
-        <Image source={item} style={styles.image} />
+        <Image source={{uri: item}} style={styles.image} />
     );
 
     return (

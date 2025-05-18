@@ -53,7 +53,6 @@ const OTPVerification = ({ route, navigation }) => {
         } else {
           Alert.alert('Error', 'Failed to verify. Please try again.');
         }
-        navigation.navigate('Main');
       } else {
         // Signup verification
         const checkResponse = await fetch(`https://${appServer.serverName}/customers/verify`, {

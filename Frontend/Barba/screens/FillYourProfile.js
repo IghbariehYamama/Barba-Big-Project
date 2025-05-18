@@ -239,41 +239,58 @@ const FillYourProfile = ({ route, navigation }) => {
                   secureTextEntry={true} />
 
               <TouchableOpacity
-                  style={[styles.inputBtn, { marginVertical: 12 }]}
+                  style={[styles.genderSelector, selectedGender && { borderColor: COLORS.primary }]}
                   onPress={() => setGenderDropdownVisible(true)}
               >
-                <Text style={{ color: COLORS.gray, ...FONTS.body4 }}>
+                <Text style={[styles.genderText, selectedGender && { color: COLORS.primary }]}>
                   {selectedGender || "Select Gender"}
                 </Text>
                 <Feather name="chevron-down" size={20} color={COLORS.gray} />
               </TouchableOpacity>
 
+
               {/* Gender Dropdown Modal */}
               <Modal
-                  animationType="fade"
+                  animationType="slide"
                   transparent={true}
                   visible={genderDropdownVisible}
               >
                 <TouchableWithoutFeedback onPress={() => setGenderDropdownVisible(false)}>
                   <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                      <Text style={styles.dropdownHeader}>Select Gender</Text>
-                      <FlatList
-                          data={genders}
-                          keyExtractor={(item) => item}
-                          renderItem={({ item }) => (
-                              <TouchableOpacity
-                                  style={styles.dropdownItem}
-                                  onPress={() => handleGenderSelect(item)}
+                    <View style={styles.genderModal}>
+                      <Text style={styles.modalTitle}>Select Gender</Text>
+
+                      <View style={styles.genderOptionsContainer}>
+                        {genders.map((gender) => (
+                            <TouchableOpacity
+                                key={gender}
+                                style={[
+                                  styles.genderOption,
+                                  selectedGender === gender && styles.selectedGenderOption
+                                ]}
+                                onPress={() => handleGenderSelect(gender)}
+                            >
+                              <Ionicons
+                                  name={gender === "MALE" ? "male-outline" : "female-outline"}
+                                  size={24}
+                                  color={selectedGender === gender ? COLORS.white : COLORS.black}
+                              />
+                              <Text
+                                  style={[
+                                    styles.genderOptionText,
+                                    selectedGender === gender && { color: COLORS.white }
+                                  ]}
                               >
-                                <Text style={styles.dropdownItemText}>{item}</Text>
-                              </TouchableOpacity>
-                          )}
-                      />
+                                {gender}
+                              </Text>
+                            </TouchableOpacity>
+                        ))}
+                      </View>
                     </View>
                   </View>
                 </TouchableWithoutFeedback>
               </Modal>
+
 
 
               {/*
@@ -333,40 +350,28 @@ const FillYourProfile = ({ route, navigation }) => {
         </View>
         <DatePickerModal
             open={openDatePicker}
-            startDate={getFormatedDate(new Date('1900/01/01'), 'YYYY/MM/DD')} // Earliest selectable date
+            startDate={getFormatedDate(new Date('1900/01/01'), 'YYYY/MM/DD')}
             selectedDate={selectedDate}
             onClose={() => setOpenDatePicker(false)}
             onChangeStartDate={(date) => {
               const today = new Date();
               const selected = new Date(date);
 
-              if (selected <= today) {
-                handleDateChange(date); // Valid date
+              if (selected > today) {
+                Alert.alert("Invalid Date", "You cannot select a future date.");
               } else {
-                Alert.alert("Invalid Date", "You cannot select a future date."); // Prevent future selection
+                handleDateChange(date);
               }
             }}
-            minimumDate={getFormatedDate(new Date('1900/01/01'), 'YYYY/MM/DD')} // Set min date
+            minimumDate={getFormatedDate(new Date('1900/01/01'), 'YYYY/MM/DD')}
             maximumDate={getFormatedDate(new Date(), 'YYYY/MM/DD')} // Disable future dates
             options={{
               textHeaderColor: COLORS.primary,
               textSecondaryColor: COLORS.gray,
               mainColor: COLORS.primary,
-              textDisabledColor: COLORS.lightGray, // Style for disabled dates
+              textDisabledColor: COLORS.gray, // Grey out future dates
             }}
             mode="calendar"
-            customDatesStyles={(date) => {
-              const today = new Date();
-              const selectedDate = new Date(date);
-
-              if (selectedDate > today) {
-                return {
-                  textStyle: { color: COLORS.lightGray }, // Grey out future dates
-                  disabled: true, // Make future dates unselectable
-                };
-              }
-              return {};
-            }}
         />
 
 
@@ -379,19 +384,22 @@ const FillYourProfile = ({ route, navigation }) => {
               filled
               style={styles.continueButton}
               onPress={async () => {
-                if (true) {
+                if (isTestMode) {
                   const { name, email, password, dateOfBirth, gender } = formState.inputValues;
                   console.log(name, email, password, dateOfBirth, gender);
                   navigation.navigate("Main");
                 }
-                const { name, email, password, dateOfBirth, gender } = formState.inputValues;
+                let { name, email, password, dateOfBirth, gender } = formState.inputValues;
                 const phone = phoneNumber;
+                dateOfBirth = dateOfBirth.slice(0, 4) + "-" + dateOfBirth.slice(5, 7) + "-" + dateOfBirth.slice(8, 10);
+
                 if (!name || !email || !password) {
                   Alert.alert("Incomplete Information", "Please complete all the fields.");
                   return;
                 }
 
                 try {
+                  console.log(dateOfBirth);
                   const addCustomerResponse = await fetch(`https://${appServer.serverName}/customers/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -404,9 +412,10 @@ const FillYourProfile = ({ route, navigation }) => {
                       gender
                     }),
                   });
-
+                  const customerData = await addCustomerResponse.json();
+                  console.log(customerData);
                   if (addCustomerResponse.ok) {
-
+                    customer.id = customerData;
                     customer.email = email;
                     customer.name = name;
                     customer.phone = phoneNumber;
@@ -539,12 +548,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 9999
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   modalContainer: {
     width: '80%',
     backgroundColor: COLORS.white,
@@ -578,18 +581,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.black,
   },
-
-  genderOption: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    backgroundColor: COLORS.lightGray,
-    marginRight: 8,
-  },
-  genderText: {
-    fontSize: 16,
-    color: COLORS.black,
-  },
   label: {
     fontSize: 16,
     color: COLORS.black,
@@ -606,6 +597,73 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontWeight: 'bold',
   },
+  genderSelector: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 12,
+    borderColor: COLORS.gray,
+    height: 52,
+    paddingHorizontal: 12,
+    backgroundColor: COLORS.greyscale500,
+  },
+
+  genderText: {
+    fontSize: 16,
+    color: COLORS.gray,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+
+  genderModal: {
+    backgroundColor: COLORS.white,
+    paddingVertical: 20,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    alignItems: "center",
+    width: "100%",
+    paddingBottom: 30,
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: COLORS.black,
+    marginBottom: 16,
+  },
+
+  genderOptionsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    width: "100%",
+    paddingHorizontal: 20,
+  },
+
+  genderOption: {
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.lightGray,
+    flexDirection: "row",
+    gap: 10,
+  },
+
+  selectedGenderOption: {
+    backgroundColor: COLORS.primary,
+  },
+
+  genderOptionText: {
+    fontSize: 16,
+    color: COLORS.black,
+    fontWeight: "bold",
+  },
+
 
 })
 

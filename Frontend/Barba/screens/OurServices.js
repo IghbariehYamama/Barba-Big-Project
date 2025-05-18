@@ -7,10 +7,12 @@ import { services } from '../data';
 import ServiceCard from '../components/ServiceCard';
 import Button from '../components/Button';
 
-const OurServices = ({ navigation }) => {
+const OurServices = ({ route, navigation }) => {
     /**
     * Render header
     */
+    let { salonID } = route.params;
+    console.log("OurServices: " + salonID)
     const renderHeader = () => {
         return (
             <View style={styles.headerContainer}>
@@ -92,7 +94,7 @@ const OurServices = ({ navigation }) => {
                     title="Book Now"
                     filled
                     style={{ marginTop: 22 }}
-                    onPress={()=>navigation.navigate("BookAppointment")}
+                    onPress={()=>navigation.navigate("BookAppointment", { salonID: salonID })}
                 />
             </View>
         </SafeAreaView>

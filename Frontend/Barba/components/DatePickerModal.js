@@ -34,20 +34,27 @@ const DatePickerModal = ({
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           <DatePicker
-            mode="calendar"
-            minimumDate={startDate}
-            selected={selectedStartDate}
-            onDateChange={handleDateChange}
-            onSelectedChange={(date) => setSelectedStartDate(date)}
-            options={{
-              backgroundColor: COLORS.primary,
-              textHeaderColor: COLORS.white,
-              textDefaultColor: '#FFFFFF',
-              selectedTextColor: COLORS.primary,
-              mainColor: COLORS.white,
-              textSecondaryColor: '#FFFFFF',
-              borderColor: COLORS.primary,
-            }}/>
+              mode="calendar"
+              minimumDate={startDate}
+              maximumDate={new Date().toISOString().split("T")[0]} // Disables future dates
+              selected={selectedStartDate}
+              onDateChange={handleDateChange}
+              onSelectedChange={(date) => {
+                if (date <= new Date().toISOString().split("T")[0]) {
+                  setSelectedStartDate(date);
+                }
+              }}
+              options={{
+                backgroundColor: COLORS.primary,
+                textHeaderColor: COLORS.white,
+                textDefaultColor: '#FFFFFF',
+                selectedTextColor: COLORS.primary,
+                mainColor: COLORS.white,
+                textSecondaryColor: '#FFFFFF',
+                borderColor: COLORS.primary,
+              }}
+          />
+
           <TouchableOpacity onPress={handleOnPressStartDate}>
             <Text style={{ color: 'white' }}>Close</Text>
           </TouchableOpacity>

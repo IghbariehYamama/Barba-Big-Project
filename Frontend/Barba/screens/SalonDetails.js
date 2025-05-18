@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, Linking } from 'react-native'
-import React, { useRef, useState } from 'react';
-import { COLORS, SIZES, icons, images, socials } from "../constants";
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import { COLORS, SIZES, icons, images, socials, appServer } from '../constants'
 import AutoSlider from '../components/AutoSlider';
 import { StatusBar } from 'expo-status-bar';
 import LinkItem from '../components/LinkItem';
@@ -11,18 +11,134 @@ import { TabSelection } from '../tabs';
 import { ScrollView } from 'react-native-virtualized-view';
 import RBSheet from "react-native-raw-bottom-sheet";
 import SocialIcon from '../components/SocialIcon';
+import { isTestMode, serverName } from '../constants/serverAPIS'
+import { SalonContext } from '../components/SalonContext'; // Adjust path
 
-const SalonDetails = ({ navigation }) => {
+const SalonDetails = ({ route, navigation }) => {
   const refRBSheet = useRef();
+  const { salonInfo, setSalonInfo } = useContext(SalonContext);
+  const [sliderImages, setSliderImages] = useState([]);
+  const [isOpen, setIsOpen] = useState(false); // moved here so it's controlled by real data
+  const daysOfWeek = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+  const today = new Date();
+  const todayDayName = daysOfWeek[today.getDay()];
+
+  useEffect(() => {
+    if (isTestMode) {
+      setSalonInfo({
+        salonID: "testID",
+        salonName: "testName",
+        salonLocation: "testLocation",
+        salonRating: "5.0",
+        facebook: '',
+        instagram: '',
+        waze: '',
+        employees: []
+      });
+      setIsOpen(true);
+    } else {
+      const fetchSalonData = async () => {
+        try {
+          const response = await fetch(`https://${appServer.serverName}/businesses/get/${route.params.salonID}`);
+          const data = await response.json();
+          console.log(data);
+
+          setSalonInfo({
+            salonID: route.params.salonID,
+            salonName: data.name,
+            salonLocation: data.location,
+            salonPhone: data.phone,
+            aboutUs: data.aboutUs,
+            salonRating: data.rating,
+            facebook: data.facebook,
+            instagram: data.instagram,
+            waze: data.waze,
+            employees: data.employees
+          });
+
+          if (data.workingHours && Array.isArray(data.workingHours)) {
+            const todayHours = data.workingHours.find(item => item.dayOfWeek === todayDayName);
+            console.log(todayDayName)
+            if (todayHours) {
+              const [currentHour, currentMinute] = [today.getHours(), today.getMinutes()];
+              const nowInMinutes = currentHour * 60 + currentMinute;
+
+              const [startHour, startMinute] = todayHours.startTime.split(':').map(Number);
+              const [endHour, endMinute] = todayHours.endTime.split(':').map(Number);
+              const startInMinutes = startHour * 60 + startMinute;
+              const endInMinutes = endHour * 60 + endMinute;
+              console.log("nowInMinutes: " + nowInMinutes)
+              console.log("startInMinutes: " + startInMinutes)
+              console.log("endInMinutes: " + endInMinutes)
+              if (nowInMinutes >= startInMinutes && nowInMinutes <= endInMinutes) {
+                setIsOpen(true);
+              } else {
+                setIsOpen(false);
+              }
+            } else {
+              // No working hours today
+              setIsOpen(false);
+            }
+          } else {
+            console.warn("No opening hours data available.");
+            setIsOpen(false);
+          }
+
+        } catch (error) {
+          console.error("Error fetching salon data:", error);
+        }
+      };
+
+      fetchSalonData();
+    }
+  }, [route.params.salonID]);
+
+
+
+  useEffect(() => {
+    const fetchSliderImages = async () => {
+      try {
+        const response = await fetch(`https://${appServer.serverName}/businesses/photos/${route.params.salonID}/sliders/urls`);
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          const fullUrls = data.map(path => `https://${appServer.serverName}${path}`);
+          setSliderImages(fullUrls);
+        } else {
+          console.warn("Unexpected data format for slider images:", data);
+          setSliderImages([]);
+        }
+      } catch (error) {
+        console.error("Error fetching slider images:", error);
+      }
+    };
+
+    if (salonInfo) {
+      fetchSliderImages();
+    }
+  }, [salonInfo]);
+
 
   // Slider images
-  const sliderImages = [
-    images.salon1,
-    images.salon2,
-    images.salon3,
-    images.salon4,
-    images.salon5,
-  ]
+  /*const sliderImages = [
+    `https://${serverName}/businesses/photos/${salonID}`
+  //images.salon2,
+    //images.salon3,
+    //images.salon4,
+    //images.salon5,
+  ]*/
+
+  /*
+  * [
+  "/businesses/photos/1/sliders/salon1.jpeg",
+  "/businesses/photos/1/sliders/salon2.jpeg",
+  "/businesses/photos/1/sliders/salon3.jpeg",
+  "/businesses/photos/1/sliders/salon7.jpeg",
+  "/businesses/photos/1/sliders/salon8.jpeg",
+  "/businesses/photos/1/sliders/salon9.jpeg"
+]
+  * */
+
+
 
   // render header
   const renderHeader = () => {
@@ -54,21 +170,21 @@ const SalonDetails = ({ navigation }) => {
 
   // render content
   const renderContent = () => {
-    const [isOpen, setIsOpen] = useState(true);
 
     return (
-      <View style={styles.contentContainer}>
-        <View style={styles.salonHeaderContainer}>
-          <Text style={styles.salonName}>Barbalerra Inova</Text>
-          <TouchableOpacity
-            onPress={() => setIsOpen(!isOpen)}
-            style={[styles.salonBtn, {
-              backgroundColor: isOpen ? "green" : "red"
-            }]}>
-            <Text style={styles.salonBtnText}>{isOpen ? "Open" : "Closed"}</Text>
-          </TouchableOpacity>
+        <View style={styles.contentContainer}>
+          <View style={styles.salonHeaderContainer}>
+            <Text style={styles.salonName}>{salonInfo.salonName}</Text>
+            <TouchableOpacity
+                style={[styles.salonBtn, {
+                  backgroundColor: isOpen ? "green" : "red"
+                }]}
+                onPress={() => setIsOpen(prev => !prev)} // Allow manual toggle
+            >
+              <Text style={styles.salonBtnText}>{isOpen ? "Open" : "Closed"}</Text>
+            </TouchableOpacity>
+          </View>
 
-        </View>
         <View style={styles.salonItemContainer}>
           <Image
             source={icons.location2}
@@ -77,7 +193,7 @@ const SalonDetails = ({ navigation }) => {
           />
           <Text style={[styles.locationText, {
             color: COLORS.grayscale700,
-          }]}>Umm Al-Fahm</Text>
+          }]}>{salonInfo.salonLocation}</Text>
         </View>
         <View style={styles.salonItemContainer}>
           <Image
@@ -88,7 +204,7 @@ const SalonDetails = ({ navigation }) => {
           <Text style={[styles.starMiddleText, {
             marginVertical: 6,
             color: COLORS.grayscale700,
-          }]}>4.8 (3,279 reviews)</Text>
+          }]}>{salonInfo.salonRating} (3,279 reviews)</Text>
         </View>
 
         {/* More information links */}
@@ -141,25 +257,25 @@ const SalonDetails = ({ navigation }) => {
           <SubHeaderItem
             title="Our Specialists"
             navTitle="See All"
-            onPress={() => navigation.navigate("OurSpecialists")}
+            onPress={() => navigation.navigate("OurSpecialists", { employees: salonInfo.employees })}
           />
           <FlatList
-            data={specialists}
+            data={salonInfo.employees}
             keyExtractor={item => item.id}
             showsHorizontalScrollIndicator={false}
             horizontal
             renderItem={({ item, index }) => (
               <SpecialistCard
                 name={item.name}
-                avatar={item.avatar}
                 position={item.position}
+                id={item.id}
                 onPress={() => { console.log("Pressed") }}
               />
             )}
           />
         </View>
 
-        <TabSelection />
+        <TabSelection salonID={salonInfo.salonID}/>
       </View>
     )
   }

@@ -5,28 +5,29 @@ import { useCallback } from 'react';
 import { FONTS } from './constants/fonts';
 import AppNavigation from './navigations/AppNavigation';
 import { LogBox } from 'react-native';
+import { SalonProvider } from './components/SalonContext'; // import your context
 
-//Ignore all log notifications
 LogBox.ignoreAllLogs();
-
-SplashScreen.preventAutoHideAsync()
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
-  const [fontsLoaded] = useFonts(FONTS)
+    const [fontsLoaded] = useFonts(FONTS);
 
-  const onLayoutRootView = useCallback(async () => {
-      if (fontsLoaded) {
-          await SplashScreen.hideAsync()
-      }
-  }, [fontsLoaded])
+    const onLayoutRootView = useCallback(async () => {
+        if (fontsLoaded) {
+            await SplashScreen.hideAsync();
+        }
+    }, [fontsLoaded]);
 
-  if (!fontsLoaded) {
-      return null
-  }
+    if (!fontsLoaded) {
+        return null;
+    }
 
-  return (
-      <SafeAreaProvider onLayout={onLayoutRootView}>
-        <AppNavigation />
-      </SafeAreaProvider>
-  );
+    return (
+        <SalonProvider> {/* Wrap everything in SalonProvider */}
+            <SafeAreaProvider onLayout={onLayoutRootView}>
+                <AppNavigation />
+            </SafeAreaProvider>
+        </SalonProvider>
+    );
 }

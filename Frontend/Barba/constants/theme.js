@@ -38,7 +38,7 @@ export const COLORS = {
     transparentTertiary: "rgba(51, 94, 247, .1)",
     transparentRed: "rgba(255,62,61, .15)",
     blackTie: "#474747",
-    grayTie: '#BCBCBC'
+    grayTie: '#BCBCBC',
 };
 
 export const SIZES = {

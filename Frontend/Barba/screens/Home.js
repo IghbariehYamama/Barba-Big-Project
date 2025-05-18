@@ -7,6 +7,7 @@ import { banners, categories, category, customer, mostPopularSalons } from '../d
 import Category from '../components/Category';
 import SubHeaderItem from '../components/SubHeaderItem';
 import SalonCard from '../components/SalonCard';
+import { serverName } from '../constants/serverAPIS'
 
 const Home = ({ navigation }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -274,12 +275,12 @@ const Home = ({ navigation }) => {
               return (
                 <SalonCard
                   name={item.name}
-                  image={images[item.image]}
+                  image={{ uri: `https://${serverName}/businesses/photos/${item.id}` }}
                   category={item.category}
                   rating={item.rating}
                   location={item.location}
                   //distance={item.distance}
-                  onPress={()=>navigation.navigate("SalonDetails")}
+                  onPress={() => navigation.navigate("SalonDetails", { salonName: item.name, salonLocation: item.location, salonRating: item.rating, salonID: item.id })}
                   categoryId={item.categoryId} 
                 />
               )

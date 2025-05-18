@@ -47,7 +47,7 @@ const AutoSlider = ({ images }) => {
           <Image
             key={index}
             style={styles.image}
-            source={image}
+            source={{uri: image}}
           />
         ))}
       </ScrollView>

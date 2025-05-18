@@ -6,8 +6,7 @@ import Header from '../components/Header';
 import Button from '../components/Button';
 import Checkbox from 'expo-checkbox'
 import Input from '../components/Input'
-
-const isTestMode = true
+import { isTestMode } from '../constants/serverAPIS'
 
 const SignUpPhoneNumber = ({ navigation }) => {
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -53,18 +52,22 @@ const SignUpPhoneNumber = ({ navigation }) => {
 
     // Handle sending phone number to API
     const handleSendPhoneNumber = async () => {
-
-        if (!phoneNumber) {
-            Alert.alert('Error', 'Please enter a valid phone number.');
-            return;
-        }
-
-        const fullPhoneNumber = `${selectedArea.callingCode}${phoneNumber}`;
-        if (true){
-            navigation.navigate("FillYourProfile", { phoneNumber: phoneNumber });
+        console.log("check1")
+        if (isTestMode){
+            navigation.navigate('FillYourProfile', { phoneNumber: phoneNumber });
         }
         else{
+            console.log("check2")
+            if (!phoneNumber) {
+                console.log("check2")
+                Alert.alert('Error', 'Please enter a valid phone number.');
+                return;
+            }
+            console.log("check3")
+            //const fullPhoneNumber = `${selectedArea.callingCode}${phoneNumber}`;
+            console.log("check4")
             try {
+                console.log("check5")
                 // Check if phone number exists
                 const checkResponse = await fetch(`https://${appServer.serverName}/customers/notExist`, {
                     method: 'POST',
@@ -75,8 +78,8 @@ const SignUpPhoneNumber = ({ navigation }) => {
                 });
 
                 const checkResult = await checkResponse.json();
-
-                if (checkResult.exists) {
+                console.log(checkResult)
+                if (!checkResult) {
                     Alert.alert('Info', 'This phone number is already registered.');
                     return;
                 }
