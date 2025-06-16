@@ -42,10 +42,6 @@ public class Business {
     private String phone;
     @Column(name="about_us")
     private String aboutUs;
-    @Column(name="google_maps")
-    private String googleMaps;
-    @Column(name="waze")
-    private String waze;
     @Column(name = "location")
     private String location;
     @Column(name="website")
@@ -72,12 +68,15 @@ public class Business {
     @Column(name = "rating")
     private double rating;
 
+    @Embedded
+    private Coordinates coordinates;
+
 
     public Business() {
     }
 
 
-    public Business(String name, List<Category> categories, List<Employee> employees, List<Service> services, List<BaseBooking> bookings, String location, double rating, String distance) {
+    public Business(String name, List<Category> categories, List<Employee> employees, List<Service> services, List<BaseBooking> bookings, String location, double rating, String distance, Coordinates coordinates) {
         this.name = name;
         this.categories = categories;
         this.employees = employees;
@@ -86,9 +85,10 @@ public class Business {
         this.location = location;
         this.rating = rating;
         this.distance = distance;
+        this.coordinates = coordinates;
     }
 
-    public Business(String name, List<Category> categories, List<Service> services, List<Employee> employees, List<BaseBooking> bookings, BusinessManager businessManager, String phone, String googleMaps, String aboutUs, String website, List<WorkingHours> workingHours) {
+    public Business(String name, List<Category> categories, List<Service> services, List<Employee> employees, List<BaseBooking> bookings, BusinessManager businessManager, String phone, String aboutUs, String website, List<WorkingHours> workingHours, Coordinates coordinates) {
         this.name = name;
         this.categories = categories;
         this.services = services;
@@ -96,10 +96,10 @@ public class Business {
         this.bookings = bookings;
         this.businessManager = businessManager;
         this.phone = phone;
-        this.googleMaps = googleMaps;
         this.aboutUs = aboutUs;
         this.website = website;
         this.workingHours = workingHours;
+        this.coordinates = coordinates;
     }
 
     public String getDistance() {
@@ -190,25 +190,11 @@ public class Business {
         this.phone = phone;
     }
 
-    public String getGoogleMaps() {
-        return googleMaps;
-    }
-
-    public void setGoogleMaps(String location) {
-        this.googleMaps = location;
-    }
 
     public String getAboutUs() {
         return aboutUs;
     }
 
-    public String getWaze() {
-        return waze;
-    }
-
-    public void setWaze(String waze) {
-        this.waze = waze;
-    }
 
     public String getFacebook() {
         return facebook;
@@ -284,6 +270,14 @@ public class Business {
         this.bookmarks = bookmarks;
     }
 
+    public Coordinates getCoordinates() {
+        return coordinates;
+    }
+
+    public void setCoordinates(Coordinates coordinates) {
+        this.coordinates = coordinates;
+    }
+
     @Override
     public String toString() {
         return "Business{" +
@@ -293,7 +287,7 @@ public class Business {
                 ", employees=" + employees +
                 ", businessManager=" + businessManager +
                 ", phone='" + phone + '\'' +
-                ", location='" + googleMaps + '\'' +
+                ", location='" + location + '\'' +
                 ", aboutUs='" + aboutUs + '\'' +
                 ", website='" + website + '\'' +
                 ", workingHours=" + workingHours +

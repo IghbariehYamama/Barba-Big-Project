@@ -1,10 +1,8 @@
-package com.BackEnd.Appointments.BLs;
+package com.BackEnd.Appointments.Services;
 
-import com.BackEnd.Appointments.DAOs.AvailableSlotDAO;
-import com.BackEnd.Appointments.DAOs.BaseBookingDAO;
-import com.BackEnd.Appointments.DAOs.BookingDAO;
-import com.BackEnd.Appointments.DAOs.CustomerDAO;
-import com.BackEnd.Appointments.Entities.BaseBooking;
+import com.BackEnd.Appointments.Repositories.AvailableSlotRepository;
+import com.BackEnd.Appointments.Repositories.BookingRepository;
+import com.BackEnd.Appointments.Repositories.CustomerRepository;
 import com.BackEnd.Appointments.Entities.Booking;
 import com.BackEnd.Appointments.Entities.Customer;
 import com.BackEnd.Appointments.Exceptions.CustomerAlreadyExistException;
@@ -16,21 +14,21 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class CustomerBL {
+public class CustomerService {
     @Autowired
-    private CustomerDAO customerDAO;
+    private CustomerRepository customerRepository;
     @Autowired
-    private BookingDAO bookingDAO;
+    private BookingRepository bookingDAO;
     @Autowired
-    private AvailableSlotDAO availableSlotDAO;
+    private AvailableSlotRepository availableSlotRepository;
 
     @Transactional
     public List<Customer> getAllCustomers() {
-        return this.customerDAO.findAll();
+        return this.customerRepository.findAll();
     }
     @Transactional
     public Customer getCustomerByID(int id) throws CustomerNotFoundException {
-        Customer customer = this.customerDAO.findById(id);
+        Customer customer = this.customerRepository.findById(id);
         if(customer == null) {
             throw new CustomerNotFoundException();
         }
@@ -38,7 +36,7 @@ public class CustomerBL {
     }
     @Transactional
     public Customer getCustomerByEmail(String email) throws CustomerNotFoundException {
-        Customer customer = this.customerDAO.findByEmail(email);
+        Customer customer = this.customerRepository.findByEmail(email);
         if(customer == null) {
             throw new CustomerNotFoundException();
         }
@@ -46,7 +44,7 @@ public class CustomerBL {
     }
     @Transactional
     public Customer getCustomerByPhone(String phone) throws CustomerNotFoundException {
-        Customer customer = this.customerDAO.findByPhone(phone);
+        Customer customer = this.customerRepository.findByPhone(phone);
         if(customer == null) {
             throw new CustomerNotFoundException();
         }
@@ -54,23 +52,23 @@ public class CustomerBL {
     }
     @Transactional
     public Customer addCustomer(Customer customer) throws CustomerAlreadyExistException {
-        if (this.customerDAO.existsByEmail(customer.getEmail())) {
+        if (this.customerRepository.existsByEmail(customer.getEmail())) {
             throw new CustomerAlreadyExistException("A customer with this email already exists.");
         }
-        return this.customerDAO.save(customer);
+        return this.customerRepository.save(customer);
     }
     @Transactional
     public boolean existsCustomerByEmail(String email) {
-        return this.customerDAO.existsByEmail(email);
+        return this.customerRepository.existsByEmail(email);
     }
     @Transactional
     public boolean existsCustomerByPhone(String phone) {
-        return this.customerDAO.existsByPhone(phone);
+        return this.customerRepository.existsByPhone(phone);
     }
     @Transactional
     public Customer updateCustomer(Customer customer) throws CustomerNotFoundException, CustomerAlreadyExistException {
         // Check if the customer exists in the database
-        Customer existingCustomer = this.customerDAO.findById(customer.getId())
+        Customer existingCustomer = this.customerRepository.findById(customer.getId())
                 .orElseThrow(() -> new CustomerNotFoundException());
 
         // Update the existing customer's details
@@ -82,24 +80,24 @@ public class CustomerBL {
         // Add more fields if applicable
 
         // Save and return the updated customer
-        return this.customerDAO.save(existingCustomer);
+        return this.customerRepository.save(existingCustomer);
     }
 
     @Transactional
     public void deleteCustomer(int id) throws CustomerNotFoundException {
-        Customer customer = this.customerDAO.findById(id);
+        Customer customer = this.customerRepository.findById(id);
         if(customer == null) {
             throw new CustomerNotFoundException();
         }
         this.bookingDAO.deleteBookingByCustomer(customer);
-        this.customerDAO.deleteById(id);
+        this.customerRepository.deleteById(id);
     }
 
     @Transactional
     public Booking addBooking(Booking booking) {
-        if(!availableSlotDAO.existsByEmployeeIdAndSlot(booking.getEmployee().getId(),booking.getChosenBookingTime()))
+        if(!availableSlotRepository.existsByEmployeeIdAndSlot(booking.getEmployee().getId(),booking.getChosenBookingTime()))
             throw new RuntimeException();
-        availableSlotDAO.deleteByEmployeeIdAndSlot(booking.getEmployee().getId(),booking.getChosenBookingTime());
+        availableSlotRepository.deleteByEmployeeIdAndSlot(booking.getEmployee().getId(),booking.getChosenBookingTime());
         return this.bookingDAO.save(booking);
     }
 
@@ -113,7 +111,7 @@ public class CustomerBL {
     }
     @Transactional
     public List<Booking> getAllCustomerBookings(int customerId) {
-        Customer customer = this.customerDAO.findById(customerId);
+        Customer customer = this.customerRepository.findById(customerId);
         if(customer == null) {
             return null;
         }

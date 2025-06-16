@@ -1,9 +1,8 @@
-package com.BackEnd.Appointments.BLs;
+package com.BackEnd.Appointments.Services;
 
-import com.BackEnd.Appointments.DAOs.*;
+import com.BackEnd.Appointments.Repositories.*;
 import com.BackEnd.Appointments.Entities.*;
 import com.BackEnd.Appointments.Enums.BookingStatus;
-import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -14,64 +13,64 @@ import java.time.YearMonth;
 import java.util.List;
 
 @Service
-public class BusinessBL {
+public class BusinessService {
     @Autowired
-    private BusinessDAO businessDAO;
+    private BusinessRepository businessRepository;
     @Autowired
     @Lazy
-    private ServiceBL serviceBL;
+    private ServiceManager serviceManager;
     @Autowired
-    private BaseBookingDAO baseBookingDAO;
+    private BaseBookingRepository baseBookingRepository;
     @Autowired
-    private BookingDAO bookingDAO;
+    private BookingRepository bookingDAO;
     @Autowired
-    private EmployeeServiceDAO employeeServiceDAO;
+    private EmployeeServiceRepository employeeServiceRepository;
     @Autowired
-    private AvailableSlotDAO availableSlotDAO;
+    private AvailableSlotRepository availableSlotRepository;
 
     public List<Business> getAllBusiness() {
-        return this.businessDAO.findAll();
+        return this.businessRepository.findAll();
     }
     public Business getBusinessById(int id) {
-        return this.businessDAO.findById(id);
+        return this.businessRepository.findById(id);
     }
     public Business getBusinessByName(String name) {
-        return this.businessDAO.findByName(name);
+        return this.businessRepository.findByName(name);
     }
     public Business updateBusiness(Business business) {
-        return this.businessDAO.save(business);
+        return this.businessRepository.save(business);
     }
     public void deleteBusiness(int id) {
-        this.businessDAO.deleteById(id);
+        this.businessRepository.deleteById(id);
     }
     public Business addBusiness(Business business) {
-        return this.businessDAO.save(business);
+        return this.businessRepository.save(business);
     }
     public List<BaseBooking> getAllBusinessBookings(Business business){
-        return this.baseBookingDAO.findBookingsByBusinessId(business.getId());
+        return this.baseBookingRepository.findBookingsByBusinessId(business.getId());
     }
     public List<BaseBooking> getAllBusinessAndEmployeeBookings(Business business, Employee employee){
-        return this.baseBookingDAO.findBookingsByBusinessIdAndEmployeeId(business.getId(), employee.getId());
+        return this.baseBookingRepository.findBookingsByBusinessIdAndEmployeeId(business.getId(), employee.getId());
     }
     public boolean isBookingAvailable(BaseBooking booking) {
-        EmployeeService employeeService = this.employeeServiceDAO.findByEmployeeAndService(booking.getEmployee(), booking.getService())
+        EmployeeService employeeService = this.employeeServiceRepository.findByEmployeeAndService(booking.getEmployee(), booking.getService())
                 .orElseThrow(() -> new RuntimeException("Employee does not offer this service"));
 
         int duration = employeeService.getDuration();
         LocalDateTime startTime = booking.getChosenBookingTime();
         LocalDateTime endTime = startTime.plusMinutes(duration); // 🔥 Perform time calculation in Java
 
-        return !baseBookingDAO.isBookingOverlapping(booking.getEmployee(), booking.getService(), startTime, endTime);
+        return !baseBookingRepository.isBookingOverlapping(booking.getEmployee(), booking.getService(), startTime, endTime);
     }
     public List<BaseBooking> getAllAvailableBusinessBookings(Integer businessId){
-        return baseBookingDAO.findBookingsByBusinessIdAndStatus(businessId, BookingStatus.UPCOMING);
+        return baseBookingRepository.findBookingsByBusinessIdAndStatus(businessId, BookingStatus.UPCOMING);
     }
     public List<AvailableSlot> getAllBusinessAvailableSlotsForMonth(Integer businessId, YearMonth month) {
         LocalDate today = LocalDate.now();
         LocalDate startDate = month.equals(YearMonth.from(today)) ? today : month.atDay(1);
         LocalDate endDateExclusive = month.plusMonths(1).atDay(1);
 
-        return availableSlotDAO.findByBusinessIdAndSlotBetween(
+        return availableSlotRepository.findByBusinessIdAndSlotBetween(
                 businessId,
                 startDate.atStartOfDay(),
                 endDateExclusive.atStartOfDay()

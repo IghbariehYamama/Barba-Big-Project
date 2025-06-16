@@ -1,4 +1,4 @@
-package com.BackEnd.Appointments.DAOs;
+package com.BackEnd.Appointments.Repositories;
 
 import com.BackEnd.Appointments.Entities.Employee;
 import com.BackEnd.Appointments.Entities.EmployeeService;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface EmployeeServiceDAO extends JpaRepository<EmployeeService, Integer> {
+public interface EmployeeServiceRepository extends JpaRepository<EmployeeService, Integer> {
     // Custom query to find by employee and service
     Optional<EmployeeService> findByEmployeeAndService(Employee employee, Service service);
 }

@@ -1,14 +1,13 @@
-package com.BackEnd.Appointments.DAOs;
+package com.BackEnd.Appointments.Repositories;
 
 import com.BackEnd.Appointments.Entities.Customer;
-import org.hibernate.type.descriptor.converter.spi.JpaAttributeConverter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface CustomerDAO extends JpaRepository<Customer, Integer> {
+public interface CustomerRepository extends JpaRepository<Customer, Integer> {
     Customer findByEmail(String email);
     Customer findByPhone(String phone);
     Customer findByEmailAndPhone(String email, String phone);

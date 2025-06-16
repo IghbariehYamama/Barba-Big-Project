@@ -23,14 +23,13 @@ public class BusinessCardDTO {
     private List<WorkingHoursDTO> workingHours;
     //private GenderService genderService;
     //    private City city;
-    private String googleMaps;
-    private String waze;
     private String facebook;
     private String instagram;
     private String tiktok;
     private double rating;
+    private CoordinatesDTO coordinates;
 
-    public BusinessCardDTO(String name, List<CategoryNameDTO> categories, List<ServiceNameDTO> services, List<EmployeeCardDTO> employees, String phone, Integer id, String location, String website, String aboutUs, List<WorkingHoursDTO> workingHours, String googleMaps, String waze, String facebook, String instagram, String tiktok, double rating) {
+    public BusinessCardDTO(String name, List<CategoryNameDTO> categories, List<ServiceNameDTO> services, List<EmployeeCardDTO> employees, String phone, Integer id, String location, String website, String aboutUs, List<WorkingHoursDTO> workingHours, String facebook, String instagram, String tiktok, double rating) {
         this.name = name;
         this.categories = categories;
         this.services = services;
@@ -41,8 +40,6 @@ public class BusinessCardDTO {
         this.website = website;
         this.aboutUs = aboutUs;
         this.workingHours = workingHours;
-        this.googleMaps = googleMaps;
-        this.waze = waze;
         this.facebook = facebook;
         this.instagram = instagram;
         this.tiktok = tiktok;
@@ -59,12 +56,12 @@ public class BusinessCardDTO {
         this.aboutUs = business.getAboutUs();
         this.website = business.getWebsite();
         this.workingHours = WorkingHoursDTO.dtos(business.getWorkingHours());
-        this.googleMaps = business.getGoogleMaps();
-        this.waze = business.getWaze();
         this.facebook = business.getFacebook();
         this.instagram = business.getInstagram();
         this.tiktok = business.getTiktok();
         this.rating = business.getRating();
+        CoordinatesDTO coordinatesDTO = new CoordinatesDTO(business.getCoordinates());
+        this.coordinates = coordinatesDTO;
     }
     public static List<BusinessCardDTO> toDTOs(List<Business> businesses) {
         List<BusinessCardDTO> dtos = new ArrayList<>();
@@ -154,28 +151,12 @@ public class BusinessCardDTO {
         this.workingHours = workingHours;
     }
 
-    public String getGoogleMaps() {
-        return googleMaps;
-    }
-
-    public void setGoogleMaps(String googleMaps) {
-        this.googleMaps = googleMaps;
-    }
-
     public String getFacebook() {
         return facebook;
     }
 
     public void setFacebook(String facebook) {
         this.facebook = facebook;
-    }
-
-    public String getWaze() {
-        return waze;
-    }
-
-    public void setWaze(String waze) {
-        this.waze = waze;
     }
 
     public String getInstagram() {
@@ -200,5 +181,13 @@ public class BusinessCardDTO {
 
     public void setRating(double rating) {
         this.rating = rating;
+    }
+
+    public CoordinatesDTO getCoordinates() {
+        return coordinates;
+    }
+
+    public void setCoordinates(CoordinatesDTO coordinates) {
+        this.coordinates = coordinates;
     }
 }

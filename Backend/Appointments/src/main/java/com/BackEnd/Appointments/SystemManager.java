@@ -1,7 +1,7 @@
 package com.BackEnd.Appointments;
 
-import com.BackEnd.Appointments.BLs.CustomerBL;
-import com.BackEnd.Appointments.DAOs.*;
+import com.BackEnd.Appointments.Services.CustomerService;
+import com.BackEnd.Appointments.Repositories.*;
 import com.BackEnd.Appointments.Entities.*;
 import com.BackEnd.Appointments.Enums.Gender;
 import com.BackEnd.Appointments.Enums.GenderService;
@@ -19,27 +19,27 @@ import java.util.List;
 @Component
 public class SystemManager {
     @Autowired
-    private BusinessDAO businessDAO;
+    private BusinessRepository businessRepository;
     @Autowired
-    private BookingDAO bookingDAO;
+    private BookingRepository bookingDAO;
     @Autowired
-    private CustomerDAO customerDAO;
+    private CustomerRepository customerRepository;
     @Autowired
-    private EmployeeDAO employeeDAO;
+    private EmployeeRepository employeeRepository;
     @Autowired
-    private ServiceDAO serviceDAO;
+    private ServiceRepository serviceRepository;
     @Autowired
-    private CustomerBL customerBL;
+    private CustomerService customerService;
     @Autowired
-    private CategoryDAO categoryDAO;
+    private CategoryRepository categoryRepository;
     @Autowired
-    private EmployeeServiceDAO employeeServiceDAO;
+    private EmployeeServiceRepository employeeServiceRepository;
     @Autowired
-    private BookmarkDAO bookmarkDAO;
+    private BookmarkRepository bookmarkRepository;
     @Autowired
-    private CityDAO cityDAO;
+    private CityRepository cityRepository;
     @Autowired
-    private AvailableSlotDAO availableSlotDAO;
+    private AvailableSlotRepository availableSlotRepository;
 
     public void run() {
 
@@ -60,7 +60,8 @@ public class SystemManager {
         City city = new City();
         city.setBusinesses(new ArrayList<>());
         city.setName("Umm El Fahem");
-        this.cityDAO.save(city);
+        this.cityRepository.save(city);
+        Coordinates coordinates1 = new Coordinates(32.5153, 35.1521);
         Business business = new Business(
                 "Barba",
                 new ArrayList<>(),
@@ -68,11 +69,11 @@ public class SystemManager {
                 new ArrayList<>(),
                 new ArrayList<>(),
                 null,
-                "0549283453",
-                "https://maps.app.goo.gl/kFgD1hisJ52TT7Kn8",
+                "0549778195",
                 "We are the best Barber Shop in the entire world.\nWe are waiting for you!\nCome Enjoy!",
                 "https://docs.google.com/document/d/1z2x-9u2cNngd3kIOc2zI5ukcQ3jx-52Uf6pez2VBa_8/edit?tab=t.0#heading=h.67yjym78o7pw",
-                workingHoursList);
+                workingHoursList,
+                coordinates1);
         business.setBookmarks(new ArrayList<>());
 
         business.setCity(city);
@@ -81,7 +82,7 @@ public class SystemManager {
         for (WorkingHours workingHours : workingHoursList) {
             workingHours.setBusiness(business); // Set the business reference
         }
-        business = businessDAO.save(business);
+        business = businessRepository.save(business);
 
         System.out.println("Adding Employee:");
         Employee employee = new Employee("Abed",
@@ -93,9 +94,9 @@ public class SystemManager {
                 Gender.MALE);
         employee.setBookings(new ArrayList<>());
         employee.setEmployeeServices(new ArrayList<>());
-        employee = employeeDAO.save(employee);
+        employee = employeeRepository.save(employee);
         business.getEmployees().add(employee);
-        business = businessDAO.save(business);
+        business = businessRepository.save(business);
 
         System.out.println("Adding Employee 1:");
         Employee employee1 = new Employee("Yamama",
@@ -107,12 +108,12 @@ public class SystemManager {
                 Gender.FEMALE);
         employee1.setBookings(new ArrayList<>());
         employee1.setEmployeeServices(new ArrayList<>());
-        employee1 =employeeDAO.save(employee1);
+        employee1 = employeeRepository.save(employee1);
         business.getEmployees().add(employee1);
-        business = businessDAO.save(business);
+        business = businessRepository.save(business);
 
 
-        System.out.println(employeeDAO.findAll());
+        System.out.println(employeeRepository.findAll());
 
         System.out.println("Adding Customer:");
         Customer customer = new Customer("Jhon",
@@ -123,7 +124,7 @@ public class SystemManager {
                 Gender.MALE);
         customer.setBookmarks(new ArrayList<>());
         try {
-            customer = customerBL.addCustomer(customer);
+            customer = customerService.addCustomer(customer);
         } catch (CustomerAlreadyExistException e) {
             System.out.println(e.getMessage());
         }
@@ -134,9 +135,9 @@ public class SystemManager {
         Category category = new Category("hair",
                 categoryBusinesses,
                 new ArrayList<>());
-        category = categoryDAO.save(category);
+        category = categoryRepository.save(category);
         business.getCategories().add(category);
-        business = businessDAO.save(business);
+        business = businessRepository.save(business);
 
         System.out.println("Adding Service:");
         List<Employee> serviceEmployees = new ArrayList<>();
@@ -149,33 +150,39 @@ public class SystemManager {
                 serviceEmployees,
                 new ArrayList<>());
         service.setEmployeeServices(new ArrayList<>());
-        service = serviceDAO.save(service);
+        service = serviceRepository.save(service);
         category.getServices().add(service);
-        category = categoryDAO.save(category);
+        category = categoryRepository.save(category);
         business.getServices().add(service);
-        business = businessDAO.save(business);
+        business = businessRepository.save(business);
         EmployeeService employeeService = new EmployeeService(employee1, service, 40);
-        employeeService = employeeServiceDAO.save(employeeService);
-        service = serviceDAO.findById(1);
-        employee1 = employeeDAO.findEmployeeById(2);
-        System.out.println(serviceDAO.findAll());
+        employeeService = employeeServiceRepository.save(employeeService);
+        service = serviceRepository.findById(1);
+        employee1 = employeeRepository.findEmployeeById(2);
+        System.out.println(serviceRepository.findAll());
+
+        EmployeeService employeeService1 = new EmployeeService(employee, service, 20);
+        employeeService = employeeServiceRepository.save(employeeService);
+        service = serviceRepository.findById(1);
+        employee1 = employeeRepository.findEmployeeById(2);
+
 
         System.out.println("Adding Booking:");
         Booking booking = new Booking(business,service,employee1,customer);
         booking.book(LocalDateTime.of(2025,12,31,14,0));
         booking = bookingDAO.save(booking);
 
-        System.out.println(customerDAO.findAll());
+        System.out.println(customerRepository.findAll());
         System.out.println("Cancel Booking:");
         booking.cancel();
         booking = bookingDAO.save(booking);
         System.out.println(bookingDAO.findAll());
-        System.out.println("test: "+customerBL.getAllCustomerBookings(3));
+        System.out.println("test: "+ customerService.getAllCustomerBookings(3));
 
 
         Bookmark bookmark = new Bookmark(customer, business);
-        bookmark = this.bookmarkDAO.save(bookmark);
-        List<Bookmark> bookmarks = bookmarkDAO.findByCustomerId(3);
+        bookmark = this.bookmarkRepository.save(bookmark);
+        List<Bookmark> bookmarks = bookmarkRepository.findByCustomerId(3);
         System.out.println("bookmarks: "+ bookmarks);
 
 
@@ -217,23 +224,23 @@ public class SystemManager {
 
         Category makeup = category;
         makeup.setName("Make up");
-        this.categoryDAO.save(makeup);
+        this.categoryRepository.save(makeup);
         Category haircut = new Category();
         haircut.setName("Haircut");
         haircut.setBusinesses(new ArrayList<>());
         haircut.setServices(new ArrayList<>());
-        this.categoryDAO.save(haircut);
+        this.categoryRepository.save(haircut);
         Category massage = new Category();
         massage.setName("Massage");
         massage.setBusinesses(new ArrayList<>());
         massage.setServices(new ArrayList<>());
-        this.categoryDAO.save(massage);
-        this.businessDAO.save(business);
+        this.categoryRepository.save(massage);
+        this.businessRepository.save(business);
         Category manicure = new Category();
         manicure.setName("Manicure");
         manicure.setBusinesses(new ArrayList<>());
         manicure.setServices(new ArrayList<>());
-        this.categoryDAO.save(manicure);
+        this.categoryRepository.save(manicure);
 
         System.out.println("started");
 
@@ -245,62 +252,71 @@ public class SystemManager {
 
         business.getCategories().add(haircut);
 
-        businessDAO.save(business);
+        businessRepository.save(business);
 
 
 // id = 2
+        Coordinates coordinates2 = new Coordinates(32.4994, 35.1073);
         Business business2 = new Business("Pretty Parlor", new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
-                "New York, Runway, 123", 4.9, "3.8 km");
+                "New York, Runway, 123", 4.9, "3.8 km", coordinates2);
         business2.getCategories().add(manicure);
-        businessDAO.save(business2);
+        businessRepository.save(business2);
 
 // id = 3
+        Coordinates coordinates3 = new Coordinates(32.5037, 35.0536);
         Business business3 = new Business("Mia Bella", new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
-                "London, Street City, 123", 4.8, "2.3 km");
+                "London, Street City, 123", 4.8, "2.3 km", coordinates3);
         business3.getCategories().add(massage);
-        businessDAO.save(business3);
+        businessRepository.save(business3);
 
 // id = 4
+        Coordinates coordinates4 = new Coordinates(32.4557, 35.1175);
         Business business4 = new Business("Glamour Spa", new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
-                "Paris, Avenue de la Beauté, 45", 4.7, "5.5 km");
+                "Paris, Avenue de la Beauté, 45", 4.7, "5.5 km",coordinates4);
         business4.getCategories().add(makeup);
-        businessDAO.save(business4);
+        businessRepository.save(business4);
 
 // id = 5
+        Coordinates coordinates5 = new Coordinates(32.4925, 35.1220);
         Business business5 = new Business("Nail Nirvana", new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
-                "Los Angeles, Sunset Boulevard, 789", 4.6, "4.1 km");
+                "Los Angeles, Sunset Boulevard, 789", 4.6, "4.1 km",coordinates5);
         business5.getCategories().add(manicure);
-        businessDAO.save(business5);
+        businessRepository.save(business5);
 
 // id = 6
+        Coordinates coordinates6 = new Coordinates(32.4762, 35.0432);
         Business business6 = new Business("Zen Retreat", new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
-                "Tokyo, Sakura Street, 456", 4.9, "3.5 km");
+                "Tokyo, Sakura Street, 456", 4.9, "3.5 km",coordinates6);
         business6.getCategories().add(massage);
-        businessDAO.save(business6);
+        businessRepository.save(business6);
 
 // id = 7
+        Coordinates coordinates7 = new Coordinates(32.5160, 35.1440);
         Business business7 = new Business("Gentleman's Grooming", new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
-                "Sydney, Bondi Beach, 789", 4.6, "2.8 km");
+                "Sydney, Bondi Beach, 789", 4.6, "2.8 km",coordinates7);
         business7.getCategories().add(haircut);
-        businessDAO.save(business7);
+        businessRepository.save(business7);
 
 // id = 8
+        Coordinates coordinates8 = new Coordinates(32.4196, 35.0373);
         Business business8 = new Business("Pedicure Palace", new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
-                "Dubai, Sheikh Zayed Road, 321", 4.8, "6.2 km");
+                "Dubai, Sheikh Zayed Road, 321", 4.8, "6.2 km", coordinates8);
         business8.getCategories().add(makeup);
-        businessDAO.save(business8);
+        businessRepository.save(business8);
 
 // id = 9
+        Coordinates coordinates9 = new Coordinates(32.3885, 35.0512);
         Business business9 = new Business("Relaxation Station", new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
-                "Rio de Janeiro, Copacabana, 456", 4.7, "3.9 km");
+                "Rio de Janeiro, Copacabana, 456", 4.7, "3.9 km", coordinates9);
         business9.getCategories().add(massage);
-        businessDAO.save(business9);
+        businessRepository.save(business9);
 
 // id = 10
+        Coordinates coordinates10 = new Coordinates(32.5203, 35.1350);
         Business business10 = new Business("yamama", new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
-                "Umm El Fahem, Ein Ibrahim, 789", 4.6, "4.1 km");
+                "Umm El Fahem, Ein Ibrahim, 789", 4.6, "4.1 km",coordinates10);
         business10.getCategories().add(manicure);
-        businessDAO.save(business10);
+        businessRepository.save(business10);
 
 
         /*
@@ -351,7 +367,7 @@ public class SystemManager {
                     LocalTime startTime = workingHours.getStartTime();
                     LocalTime endTime = workingHours.getEndTime();
                     LocalTime currentTime = startTime;
-                    int duration = employeeService.getDuration(); // minutes
+                    int duration = employeeService.getDuration();// minutes
 
                     while (!currentTime.plusMinutes(duration).isAfter(endTime)) {
                         LocalDateTime slotDateTime = LocalDateTime.of(date, currentTime);
@@ -362,7 +378,7 @@ public class SystemManager {
                         slot.setService(employeeService.getService());
                         slot.setSlot(slotDateTime);
 
-                        availableSlotDAO.save(slot);
+                        availableSlotRepository.save(slot);
                         availableSlots.add(slot);
 
                         currentTime = currentTime.plusMinutes(duration);
@@ -371,6 +387,38 @@ public class SystemManager {
             }
         }
 
+// Today to 30 days from tomorrow
+        tomorrow = LocalDate.now().plusDays(1);
+        endDate = tomorrow.plusDays(30);
 
+        for (LocalDate date = tomorrow; !date.isAfter(endDate); date = date.plusDays(1)) {
+            DayOfWeek dayOfWeek = date.getDayOfWeek();
+
+            // Filter working hours that match this day
+            for (WorkingHours workingHours : workingHoursList) {
+                if (workingHours.getDayOfWeek() == dayOfWeek) {
+
+                    LocalTime startTime = workingHours.getStartTime();
+                    LocalTime endTime = workingHours.getEndTime();
+                    LocalTime currentTime = startTime;
+                    int duration = employeeService1.getDuration();// minutes
+
+                    while (!currentTime.plusMinutes(duration).isAfter(endTime)) {
+                        LocalDateTime slotDateTime = LocalDateTime.of(date, currentTime);
+
+                        AvailableSlot slot = new AvailableSlot();
+                        slot.setBusiness(workingHours.getBusiness());
+                        slot.setEmployee(employeeService1.getEmployee());
+                        slot.setService(employeeService1.getService());
+                        slot.setSlot(slotDateTime);
+
+                        availableSlotRepository.save(slot);
+                        availableSlots.add(slot);
+
+                        currentTime = currentTime.plusMinutes(duration);
+                    }
+                }
+            }
+        }
     }
 }

@@ -39,7 +39,6 @@ public class BusinessGetDTO {
         this.services = ServiceNameDTO.toDTO(business.getServices());
         this.employees = EmployeeNameDTO.toDTO(business.getEmployees());
         this.phone = business.getPhone();
-        this.location = business.getGoogleMaps();
         this.aboutUs = business.getAboutUs();
         this.website = business.getWebsite();
         this.workingHours = WorkingHoursDTO.dtos(business.getWorkingHours());
