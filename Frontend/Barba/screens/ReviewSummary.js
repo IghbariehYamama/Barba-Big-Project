@@ -9,7 +9,18 @@ import { customer } from '../data'
 
 const ReviewSummary = ({ navigation, route }) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const { date, time } = route.params;
+  const {
+    date,
+    time,
+    salonName,
+    salonAddress,
+    customerName,
+    customerPhone,
+    specialistName,
+    services, // Array: [{ name: "Haircut", price: 6.00 }, ...]
+    employeeId,
+    businessId
+  } = route.params;
 
   const createAppointment = async () => {
     try {
@@ -18,19 +29,17 @@ const ReviewSummary = ({ navigation, route }) => {
       let minute = time.slice(3, 5);
       minute = minute[0] === "0" ? minute[1] : minute;
       const appointmentData = {
-        businessId: "1",
+        businessId: businessId,
         serviceId: "1",
         customerId: customer.id,
-        employeeId: "2",
+        employeeId: employeeId,
         hour: hour,
         minute: minute,
         day: date.slice(8, 10),
         month: date.slice(6, 7),
         year: date.slice(0, 4)
       };
-      console.log(time);
-      console.log(date);
-      const response = await fetch(`https://${appServer.serverName}/customers/bookings/add`, {
+      const response = await fetch(`https://${appServer.serverName}/bookings/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -129,32 +138,32 @@ const ReviewSummary = ({ navigation, route }) => {
           }]}>
             <View style={styles.view}>
               <Text style={styles.viewLeft}>Barber/Salon</Text>
-              <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>Barbarellla Inova</Text>
+              <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>{salonName}</Text>
             </View>
             <View style={styles.view}>
               <Text style={styles.viewLeft}>Address</Text>
-              <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>6993 Meadow Valley Terrace</Text>
+              <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>{salonAddress}</Text>
             </View>
 
             <View style={styles.view}>
               <Text style={styles.viewLeft}>Name</Text>
-              <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>Daniel Austin</Text>
+              <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>{customerName}</Text>
             </View>
             <View style={styles.view}>
               <Text style={styles.viewLeft}>Phone</Text>
-              <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>+1 111 467 378 399</Text>
+              <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>{customerPhone}</Text>
             </View>
             <View style={styles.view}>
               <Text style={styles.viewLeft}>Booking Date</Text>
-              <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>December 23, 2024</Text>
+              <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>{date}</Text>
             </View>
             <View style={styles.view}>
               <Text style={styles.viewLeft}>Booking Hours</Text>
-              <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>10:00 AM</Text>
+              <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>{time}</Text>
             </View>
             <View style={styles.view}>
               <Text style={styles.viewLeft}>Specialist</Text>
-              <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>Nathan Alexander</Text>
+              <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>{specialistName}</Text>
             </View>
           </View>
 
@@ -181,7 +190,7 @@ const ReviewSummary = ({ navigation, route }) => {
               <Text style={[styles.viewRight, { color: COLORS.greyscale900 }]}>$11.99</Text>
             </View>
           </View>
-
+          {/*
           <View style={[styles.cardContainer, {
             backgroundColor: COLORS.white
           }]}>
@@ -201,6 +210,7 @@ const ReviewSummary = ({ navigation, route }) => {
               <Text style={styles.changeBtnText}>Change</Text>
             </TouchableOpacity>
           </View>
+          */}
 
         </ScrollView>
         <Button

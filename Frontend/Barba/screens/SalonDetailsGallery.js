@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView } from 'react-native-virtualized-view';
 import { SalonContext } from '../components/SalonContext'
 import { agendaDayNumColor } from 'react-native-calendars/src/style'
+import { SalonDetailsGalleryAPI } from '../APIs/SalonDetailsGalleryAPIs'
 
 const numColumns = 3;
 const screenWidth = SIZES.width - 48;
@@ -18,25 +19,17 @@ const SalonDetailsGallery = ({ navigation }) => {
     const { salonInfo } = useContext(SalonContext);
 
     useEffect(() => {
-        const fetchOurGallery = async () => {
+        const loadGallery = async () => {
             try {
-                const response = await fetch(`https://${appServer.serverName}/businesses/photos/${salonInfo.salonID}/gallery/urls`);
-                const data = await response.json();
-                console.log("data: " + data)
-                console.log("salonInfo salonID: " + salonInfo.salonID)
-                if (Array.isArray(data)) {
-                    const fullUrls = data.map(path => `https://${appServer.serverName}${path}`);
-                    setOurGallery(fullUrls);
-                } else {
-                    console.warn("Unexpected data format for slider images:", data);
-                    setOurGallery([]);
-                }
+                const images = await SalonDetailsGalleryAPI.fetchGalleryImages(salonInfo.salonID);
+                setOurGallery(images);
             } catch (error) {
-                console.error("Error fetching slider images:", error);
+                setOurGallery([]);
             }
         };
+
         if (salonInfo) {
-            fetchOurGallery();
+            loadGallery();
         }
     }, [salonInfo]);
 

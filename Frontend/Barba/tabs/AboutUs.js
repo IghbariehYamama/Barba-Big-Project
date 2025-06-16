@@ -33,6 +33,48 @@ const AboutUs = () => {
         setExpanded(!expanded);
     };
 
+    const formatTime = (time) => {
+        if (!time) return null;
+        const [hour, minute] = time.split(":");
+        const h = parseInt(hour, 10);
+        const suffix = h >= 12 ? "pm" : "am";
+        const formattedHour = ((h + 11) % 12 + 1); // 24h -> 12h
+        return `${formattedHour}:${minute}${suffix}`;
+    };
+
+    const groupWorkingHours = (hours) => {
+        if (!hours || hours.length === 0) return [];
+
+        const groups = [];
+        let currentGroup = {
+            days: [hours[0].dayOfWeek],
+            startTime: hours[0].startTime,
+            endTime: hours[0].endTime,
+        };
+
+        for (let i = 1; i < hours.length; i++) {
+            const { dayOfWeek, startTime, endTime } = hours[i];
+            if (
+                startTime === currentGroup.startTime &&
+                endTime === currentGroup.endTime
+            ) {
+                currentGroup.days.push(dayOfWeek);
+            } else {
+                groups.push(currentGroup);
+                currentGroup = {
+                    days: [dayOfWeek],
+                    startTime,
+                    endTime,
+                };
+            }
+        }
+
+        groups.push(currentGroup);
+        return groups;
+    };
+
+
+
     return (
         <View>
             <Text style={[styles.description, { 
@@ -44,25 +86,32 @@ const AboutUs = () => {
                 </Text>
             </TouchableOpacity>
 
-            <Text style={[styles.subtitle, { 
-               color: COLORS.greyscale900,
-            }]}>Working Hours</Text>
-            <View style={styles.hoursContainer}>
-                <Text style={[styles.hoursDay, { 
-                    color: COLORS.grayscale700,
-                }]}>Monday - Friday</Text>
-                <Text style={[styles.hours, { 
-                    color: COLORS.black,
-                }]}>9:00am - 5:00pm</Text>
-            </View>
-            <View style={styles.hoursContainer}>
-                <Text style={[styles.hoursDay, { 
-                     color: COLORS.grayscale700,
-                }]}>Saturday - Sunday</Text>
-                <Text style={[styles.hours, { 
-                     color: COLORS.black,
-                }]}>9:00am - 5:00pm</Text>
-            </View>
+            <Text style={[styles.subtitle, { color: COLORS.greyscale900 }]}>Working Hours</Text>
+            {groupWorkingHours(salonInfo?.workingHours).map((group, index) => {
+                const { days, startTime, endTime } = group;
+
+                const displayDays =
+                    days.length === 1
+                        ? days[0]
+                        : `${days[0].slice(0, 3)} - ${days[days.length - 1].slice(0, 3)}`;
+
+                const displayHours =
+                    startTime && endTime
+                        ? `${formatTime(startTime)} - ${formatTime(endTime)}`
+                        : "Closed";
+
+                return (
+                    <View key={index} style={styles.hoursContainer}>
+                        <Text style={[styles.hoursDay, { color: COLORS.grayscale700 }]}>
+                            {displayDays}
+                        </Text>
+                        <Text style={[styles.hours, { color: COLORS.black }]}>
+                            {displayHours}
+                        </Text>
+                    </View>
+                );
+            })}
+
             <Text style={[styles.subtitle, { 
                 color: COLORS.greyscale900,
             }]}>Contact Us</Text>
@@ -101,15 +150,15 @@ const AboutUs = () => {
                     customMapStyle={mapStandardStyle }
                     userInterfaceStyle="dark"
                     initialRegion={{
-                        latitude: 32.51833126,
-                        longitude: 35.152166058,
+                        latitude: salonInfo.coordinates.latitude,
+                        longitude: salonInfo.coordinates.longitude,
                         latitudeDelta: 0.0922,
                         longitudeDelta: 0.0421,
                     }}>
                     <Marker
                         coordinate={{
-                            latitude: 32.51833126,
-                            longitude: 35.152166058,
+                            latitude: salonInfo.coordinates.latitude,
+                            longitude: salonInfo.coordinates.longitude,
                         }}
                         image={icons.mapsOutline}
                         title="Move"

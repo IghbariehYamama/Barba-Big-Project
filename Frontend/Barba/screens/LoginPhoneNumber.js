@@ -7,7 +7,8 @@ import Button from '../components/Button';
 import { customer } from '../data/index';
 import Input from '../components/Input'
 import { useFocusEffect } from '@react-navigation/native'
-import { isTestMode } from '../constants/serverAPIS'
+import { isTestMode } from '../APIs/serverAPIS'
+import { LoginPhoneNumberAPI } from '../APIs/LoginPhoneNumberAPIs';
 
 const LoginPhoneNumber = ({ navigation }) => {
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -58,43 +59,28 @@ const LoginPhoneNumber = ({ navigation }) => {
 
     // Handle sending phone number to API
     const handleSendPhoneNumber = async () => {
-        console.log("check1");
-        if (isTestMode){
-            console.log("check2");
+        if (isTestMode) {
             navigation.navigate('Main');
+            return;
         }
-        else{
-            console.log("check3");
+
         if (!phoneNumber) {
-            console.log("check4");
             Alert.alert('Error', 'Please enter a valid phone number.');
             return;
         }
-            console.log("check5");
-        //const fullPhoneNumber = `${selectedArea.callingCode}${phoneNumber}`;
+
         try {
-            // Check if phone number exists
-
-            const checkResponse = await fetch(`https://${appServer.serverName}/customers/signIn/phone`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ phoneNumber: phoneNumber }),
-            });
-            if (!checkResponse.ok) {
-                Alert.alert('Info', 'This phone number is not registered.');
-                return;
-            }
-            Alert.alert('Success', checkResponse.body);
-
+            console.log("check 1")
+            console.log(phoneNumber)
+            await LoginPhoneNumberAPI.sendPhoneNumber(phoneNumber);
+            Alert.alert('Success', 'Verification code sent.');
             setCodeSent(true);
-            navigation.navigate("OTPVerification", { phoneNumber: phoneNumber, login: true });
-
+            navigation.navigate("OTPVerification", { phoneNumber, login: true });
         } catch (err) {
             setError(err.message);
         }
-    }};
+    };
+
 
     // Handle verifying the code
 

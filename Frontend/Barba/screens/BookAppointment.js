@@ -8,7 +8,8 @@ import { Calendar } from 'react-native-calendars';
 import Button from '../components/Button';
 import SpecialistCard from '../components/SpecialistCard';
 import { SalonContext } from '../components/SalonContext';
-import { specialists } from '../data'
+import { customer, specialists } from '../data'
+import { BookAppointmentAPI } from '../APIs/BookAppointmentAPIs'
 
 const BookAppointment = ({ route, navigation }) => {
   const [availableSlots, setAvailableSlots] = useState([]);
@@ -32,14 +33,12 @@ const BookAppointment = ({ route, navigation }) => {
   }, [salonInfo.salonID, selectedMonth, selectedYear]);
 
 
-
   const fetchAvailableSlots = async (year, month) => {
     setMarkedDates({});
     setLoadingCalendar(true);
 
     try {
-      const res = await fetch(`https://${appServer.serverName}/businesses/business/${salonInfo.salonID}/available/slots/month/${year}/${month}`);
-      const data = await res.json();
+      const data = await BookAppointmentAPI.fetchAvailableSlots(salonInfo.salonID, year, month);
       setAvailableSlots(data);
 
       const dateMap = {};
@@ -265,19 +264,20 @@ const BookAppointment = ({ route, navigation }) => {
   );
 
   const renderSpecialistCard = ({ item }) => {
-    if (!item) return null; // <- Prevent crashing on undefined item
+    if (!item || !salonInfo?.employees) return null;
 
-    const specialist = specialists.find(s => s.id.toString() === item.toString());
+    const specialist = salonInfo.employees.find(
+        (emp) => emp.id.toString() === item.toString()
+    );
 
-    if (!specialist) return null; // <- If no match, skip rendering
+    if (!specialist) return null;
 
     return (
         <SpecialistCard
             key={specialist.id}
             id={specialist.id}
             name={specialist.name}
-            avatar={specialist.avatar}
-            position={specialist.position}
+            position={specialist.position || 'Specialist'} // Adjust to actual key name
             onPress={handleSelectSpecialist}
             isSelected={selectedSpecialist === specialist.id}
         />
@@ -346,13 +346,24 @@ const BookAppointment = ({ route, navigation }) => {
               filled
               style={styles.button}
               onPress={() => {
-                navigation.navigate("ReviewSummary", {
+                const selectedEmployee = salonInfo?.employees?.find(
+                    (emp) => emp.id.toString() === selectedSpecialist?.toString()
+                );
+
+                navigation.navigate('ReviewSummary', {
                   date: selectedDate,
                   time: selectedHour,
-                  specialist: selectedSpecialist,
+                  salonName: salonInfo.salonName,
+                  businessId: salonInfo.salonID,
+                  salonAddress: salonInfo.salonLocation,
+                  customerName: customer.name,
+                  customerPhone: customer.phone,
+                  specialistName: selectedEmployee?.name || 'Unknown',
+                  employeeId: selectedSpecialist
                 });
               }}
           />
+
         </View>
       </SafeAreaView>
   );

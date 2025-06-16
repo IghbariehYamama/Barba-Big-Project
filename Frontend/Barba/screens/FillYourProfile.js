@@ -13,6 +13,8 @@ import DatePickerModal from '../components/DatePickerModal';
 import Button from '../components/Button';
 import { customer } from '../data/index';
 import { allcities } from '../data/allCities'
+import { Calendar } from 'react-native-calendars';
+import { FillYourProfileAPI } from '../APIs/FillYourProfileAPIs'
 
 
 const isTestMode = false;
@@ -50,15 +52,42 @@ const FillYourProfile = ({ route, navigation }) => {
   const [selectedCity, setSelectedCity] = useState(null);
   const [cityDropdownVisible, setCityDropdownVisible] = useState(false);
   const { phoneNumber } = route.params;
+  const [isDateModalVisible, setDateModalVisible] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState(null);
+  const [calendarMode, setCalendarMode] = useState('day'); // 'day', 'month', or 'year'
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [calendarDate, setCalendarDate] = useState('');
+
+  useEffect(() => {
+    const dateStr = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-01`;
+    setCalendarDate(dateStr);
+  }, [selectedYear, selectedMonth]);
 
 
   const genders = ["MALE", "FEMALE"];
+
+  console.log('Date of birth:', dateOfBirth);
 
   const handleGenderSelect = (gender) => {
     setSelectedGender(gender);
     inputChangedHandler("gender", gender);
     setGenderDropdownVisible(false);
   };
+
+// Date formatting util
+  const formatDateToDisplay = (date) => {
+    // Ensure consistent formatting for display
+    const d = new Date(date);
+    return d.toISOString().split('T')[0]; // "YYYY-MM-DD"
+  };
+
+  useEffect(() => {
+    // Initialize selectedDate from formState
+    if (formState.inputValues.dateOfBirth) {
+      setSelectedDate(formatDateToDisplay(formState.inputValues.dateOfBirth));
+    }
+  }, []);
 
 
   const today = getFormatedDate(new Date(), 'YYYY-MM-DD'); // Or 'YYYY/MM/DD' based on library
@@ -334,47 +363,130 @@ const FillYourProfile = ({ route, navigation }) => {
                 </TouchableWithoutFeedback>
               </Modal>*/}
 
-              <View style={{
-                width: SIZES.width - 32
-              }}>
-                <TouchableOpacity
-                    style={styles.inputBtn}
-                    onPress={() => setOpenDatePicker(true)}>
-                  <Text style={styles.dateText}>{selectedDate || "Select Date of Birth"}</Text>
-                  <Feather name="calendar" size={24} color={COLORS.gray} />
+              <View style={{ width: SIZES.width - 32 }}>
+                <TouchableOpacity onPress={() => setDateModalVisible(true)} style={styles.datePicker}>
+                  <Text style={styles.datePickerText}>
+                    {dateOfBirth
+                        ? new Date(dateOfBirth).toLocaleDateString('en-GB') // dd/mm/yyyy format
+                        : "Choose Date of Birth"}
+                  </Text>
                 </TouchableOpacity>
               </View>
+
 
             </View>
           </ScrollView>
         </View>
-        <DatePickerModal
-            open={openDatePicker}
-            startDate={getFormatedDate(new Date('1900/01/01'), 'YYYY/MM/DD')}
-            selectedDate={selectedDate}
-            onClose={() => setOpenDatePicker(false)}
-            onChangeStartDate={(date) => {
-              const today = new Date();
-              const selected = new Date(date);
+        <Modal
+            visible={isDateModalVisible}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={() => setDateModalVisible(false)}
+        >
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 16, width: '90%' }}>
+              <TouchableOpacity onPress={() => {
+                if (calendarMode === 'day') setCalendarMode('month');
+                else if (calendarMode === 'month') setCalendarMode('year');
+              }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 10 }}>
+                  {calendarMode === 'day' && `${new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long' })} ${selectedYear}`}
+                  {calendarMode === 'month' && selectedYear}
+                  {calendarMode === 'year' && 'Select Year'}
+                </Text>
+              </TouchableOpacity>
 
-              if (selected > today) {
-                Alert.alert("Invalid Date", "You cannot select a future date.");
-              } else {
-                handleDateChange(date);
-              }
-            }}
-            minimumDate={getFormatedDate(new Date('1900/01/01'), 'YYYY/MM/DD')}
-            maximumDate={getFormatedDate(new Date(), 'YYYY/MM/DD')} // Disable future dates
-            options={{
-              textHeaderColor: COLORS.primary,
-              textSecondaryColor: COLORS.gray,
-              mainColor: COLORS.primary,
-              textDisabledColor: COLORS.gray, // Grey out future dates
-            }}
-            mode="calendar"
-        />
+              {/* Year Selector */}
+              {calendarMode === 'year' && (
+                  <FlatList
+                      data={Array.from({ length: new Date().getFullYear() - 1900 + 1 }, (_, i) => new Date().getFullYear() - i)} // descending
+                      keyExtractor={(item) => item.toString()}
+                      numColumns={3}
+                      contentContainerStyle={{ paddingVertical: 10 }}
+                      showsVerticalScrollIndicator={false}
+                      style={{ maxHeight: 300 }} // limit height
+                      renderItem={({ item: year }) => (
+                          <TouchableOpacity
+                              onPress={() => {
+                                setSelectedYear(year);
+                                setCalendarDate(`${year}-${String(selectedMonth + 1).padStart(2, '0')}-01`);
+                                setCalendarMode('month');
+                              }}
+
+                              style={{ flex: 1, margin: 6, alignItems: 'center', paddingVertical: 10, backgroundColor: '#f0f0f0', borderRadius: 8 }}
+                          >
+                            <Text style={{ fontSize: 16 }}>{year}</Text>
+                          </TouchableOpacity>
+                      )}
+                  />
+              )}
 
 
+              {calendarMode === 'month' && (
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                    {Array.from({ length: 12 }, (_, month) => (
+                        <TouchableOpacity
+                            key={month}
+                            onPress={() => {
+                              setSelectedMonth(month);
+                              setCalendarDate(`${selectedYear}-${String(month + 1).padStart(2, '0')}-01`);
+                              setCalendarMode('day');
+                            }}
+                            style={{ width: '30%', marginVertical: 8, alignItems: 'center' }}
+                        >
+                          <Text style={{ fontSize: 16 }}>
+                            {new Date(2020, month).toLocaleString('default', { month: 'short' })}
+                          </Text>
+                        </TouchableOpacity>
+                    ))}
+                  </View>
+              )}
+
+
+              {/* Day Selector (Calendar) */}
+              {calendarMode === 'day' && (
+                  <Calendar
+                      onDayPress={(day) => {
+                        setDateOfBirth(day.dateString);
+                        inputChangedHandler('dateOfBirth', day.dateString); // <-- ADD THIS LINE
+                        setDateModalVisible(false);
+                      }}
+
+                      key={`${selectedYear}-${selectedMonth}`}
+                      current={calendarDate}
+                      maxDate={new Date().toISOString().split('T')[0]}
+                      markedDates={{
+                        ...(dateOfBirth && {
+                          [dateOfBirth]: {
+                            selected: true,
+                            selectedColor: COLORS.primary,
+                            selectedTextColor: COLORS.white
+                          }
+                        })
+                      }}
+                      theme={{
+                        selectedDayBackgroundColor: COLORS.primary,
+                        todayTextColor: COLORS.primary,
+                        arrowColor: COLORS.primary,
+                      }}
+                      hideArrows={true}
+                      renderHeader={() => null}
+                      style={{ borderRadius: 12 }}
+                  />
+              )}
+
+              <TouchableOpacity
+                  style={{ marginTop: 16, alignSelf: 'flex-end' }}
+                  onPress={() => {
+                    setCalendarMode('day');
+                    setDateModalVisible(false);
+                  }}
+              >
+                <Text style={{ color: COLORS.primary, fontWeight: 'bold' }}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
 
 
         {RenderAreasCodesModal()}
@@ -399,37 +511,29 @@ const FillYourProfile = ({ route, navigation }) => {
                 }
 
                 try {
-                  console.log(dateOfBirth);
-                  const addCustomerResponse = await fetch(`https://${appServer.serverName}/customers/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      name,
-                      email,
-                      password,
-                      phone,
-                      dateOfBirth,
-                      gender
-                    }),
+                  const customerData = await FillYourProfileAPI.registerCustomer({
+                    name,
+                    email,
+                    password,
+                    phone: phoneNumber,
+                    dateOfBirth,
+                    gender
                   });
-                  const customerData = await addCustomerResponse.json();
-                  console.log(customerData);
-                  if (addCustomerResponse.ok) {
-                    customer.id = customerData;
-                    customer.email = email;
-                    customer.name = name;
-                    customer.phone = phoneNumber;
-                    customer.verified = true;
 
-                    Alert.alert("Success", "Profile created successfully!");
-                    navigation.navigate("Main");
-                  } else {
-                    Alert.alert("Error", "Failed to create profile. Please try again.");
-                  }
+                  customer.id = customerData;
+                  customer.email = email;
+                  customer.name = name;
+                  customer.phone = phoneNumber;
+                  customer.verified = true;
+
+                  Alert.alert("Success", "Profile created successfully!");
+                  navigation.navigate("Main");
+
                 } catch (error) {
                   Alert.alert("Error", "An error occurred while processing your request.");
                 }
               }}
+
           />
         </View>
       </SafeAreaView>
@@ -549,18 +653,20 @@ const styles = StyleSheet.create({
     zIndex: 9999
   },
   modalContainer: {
-    width: '80%',
+    width: '90%',
     backgroundColor: COLORS.white,
     borderRadius: 16,
     paddingVertical: 16,
-    paddingHorizontal: 12,
-    shadowColor: '#000', // iOS shadow
+    paddingHorizontal: 16,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    elevation: 5, // Android shadow
+    elevation: 5,
     alignItems: 'center',
+    overflow: 'hidden',
   },
+
 
   dropdownHeader: {
     marginBottom: 16,
@@ -663,7 +769,55 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     fontWeight: "bold",
   },
+  datePicker: {
+    borderWidth: 1,
+    borderRadius: 12,
+    borderColor: COLORS.greyscale500,
+    height: 52,
+    paddingLeft: 8,
+    fontSize: 18,
+    justifyContent: "center",
+    backgroundColor: COLORS.greyscale500,
+    paddingRight: 8,
+    marginTop: 4,
+  },
 
+  datePickerText: {
+    color: COLORS.gray,
+    fontSize: 14,
+    ...FONTS.body4
+  },
+
+  calendarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 16,
+    width: '100%',
+  },
+
+  calendarDropdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.greyscale500,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginHorizontal: 4,
+  },
+
+  calendarDropdownText: {
+    fontSize: 16,
+    color: COLORS.black,
+    marginRight: 4,
+  },
+
+  calendarArrowIcon: {
+    width: 12,
+    height: 12,
+    tintColor: COLORS.black,
+  },
 
 })
 

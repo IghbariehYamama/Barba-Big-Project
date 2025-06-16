@@ -7,7 +7,8 @@ import { banners, categories, category, customer, mostPopularSalons } from '../d
 import Category from '../components/Category';
 import SubHeaderItem from '../components/SubHeaderItem';
 import SalonCard from '../components/SalonCard';
-import { serverName } from '../constants/serverAPIS'
+import { serverName } from '../APIs/serverAPIS'
+import { homeAPIs } from '../APIs/HomeAPIs';
 
 const Home = ({ navigation }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -16,17 +17,13 @@ const Home = ({ navigation }) => {
     // Fetch salons nearby your location from API
     useEffect(() => {
         const fetchSalons = async () => {
-            try {
-                const response = await fetch(`https://${appServer.serverName}/businesses/all`);  // Replace with your API endpoint
-                const data = await response.json();
-                setSalonsNearbyYourLocation(data);  // Set fetched data
-            } catch (error) {
-                console.error("Error fetching salons:", error);
-            }
+            const data = await homeAPIs.fetchAllSalons();
+            setSalonsNearbyYourLocation(data);
         };
 
         fetchSalons();
     }, []);
+
     const getGreeting = () => {
         const currentHour = new Date().getHours();
 
@@ -275,7 +272,7 @@ const Home = ({ navigation }) => {
               return (
                 <SalonCard
                   name={item.name}
-                  image={{ uri: `https://${serverName}/businesses/photos/${item.id}` }}
+                  image={{ uri: homeAPIs.getSalonImageUrl(item.id) }}
                   category={item.category}
                   rating={item.rating}
                   location={item.location}
