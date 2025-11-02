@@ -12,7 +12,6 @@ const SalonCard = ({
     location
 }) => {
     const [isBookmarked, setIsBookmarked] = useState(false);
-
     return (
         <TouchableOpacity
             onPress={onPress}

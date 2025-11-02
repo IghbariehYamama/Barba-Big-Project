@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState, useEffect } from 'react';
 import BottomTabNavigation from './BottomTabNavigation';
 import {AddNewCard, BookAppointment, Call, CancelBooking, ChangeEmail, ChangePIN, ChangePassword, Chat, CreateNewPIN, CreateNewPassword, CustomerService, EReceipt, EditProfile, FillYourProfile, Fingerprint, ForgotPasswordEmail, ForgotPasswordMethods, ForgotPasswordPhoneNumber, Haircuts, HelpCenter, InviteFriends, Login, LoginPhoneNumber, Makeup, Manicure, Massage, MostPopularSalons, MyBookmark, Notifications, OTPVerification, Onboarding1, Onboarding2, Onboarding3, Onboarding4, OurServices, OurSpecialists, PackageDetails, PaymentMethods, ReviewSummary, SalonDetails, SalonDetailsGallery, SalonDetailsOurPackages, SalonDetailsReviews, SalonsNearbyYourLocation, Search, ServicesListType, SettingsLanguage, SettingsNotifications, SettingsPayment, SettingsPrivacyPolicy, SettingsSecurity, Signup, SignUpPhoneNumber, Welcome,} from '../screens';
+import { navigationRef } from './navigationRef'
 
 const Stack = createNativeStackNavigator();
 
@@ -35,7 +36,7 @@ const AppNavigation = () => {
     }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
             <Stack.Navigator 
               screenOptions={{ headerShown: false }}
               // replace the second onboarding1 with login in order to make the user not to see the onboarding

@@ -1,5 +1,5 @@
 //changable - for now
-export const serverName = "kxj1mn8iwu.eu.loclx.io";
+export const serverName = "mmin4dgwvn.eu.loclx.io";
 export const isTestMode = false;
 const appServer = { serverName, isTestMode };
 

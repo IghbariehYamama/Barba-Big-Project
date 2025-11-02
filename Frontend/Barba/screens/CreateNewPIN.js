@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
@@ -6,6 +6,7 @@ import { ScrollView } from "react-native-virtualized-view";
 import { COLORS } from '../constants';
 import { OtpInput } from "react-native-otp-entry";
 import Button from "../components/Button";
+import styles from '../ScreensStyle/CreateNewPINStyle'
 
 const CreateNewPIN = ({ navigation }) => {
 
@@ -48,61 +49,5 @@ const CreateNewPIN = ({ navigation }) => {
         </SafeAreaView>
     )
 };
-
-const styles = StyleSheet.create({
-    area: {
-        flex: 1,
-        backgroundColor: COLORS.white
-    },
-    container: {
-        flex: 1,
-        padding: 16,
-        backgroundColor: COLORS.white
-    },
-    title: {
-        fontSize: 18,
-        fontFamily: "medium",
-        color: COLORS.greyscale900,
-        textAlign: "center",
-        marginVertical: 64
-    },
-    OTPStyle: {
-        borderColor: COLORS.black,
-        borderRadius: 8,
-        height: 58,
-        width: 58,
-        backgroundColor: COLORS.secondaryWhite,
-        borderBottomColor: "gray",
-        borderBottomWidth: .4,
-        borderWidth: .4,
-        borderColor: "gray"
-    },
-    codeContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginVertical: 24,
-        justifyContent: "center"
-    },
-    code: {
-        fontSize: 18,
-        fontFamily: "medium",
-        color: COLORS.greyscale900,
-        textAlign: "center"
-    },
-    time: {
-        fontFamily: "medium",
-        fontSize: 18,
-        color: COLORS.primary
-    },
-    button: {
-        borderRadius: 32,
-        marginVertical: 72
-    },
-    center: {
-        flex: 1,
-        justifyContent: "center",
-        marginBottom: 144
-    },
-})
 
 export default CreateNewPIN
