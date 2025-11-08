@@ -40,7 +40,12 @@ public class Booking extends BaseBooking {
     }
 
     @Override
-    public String toString() {
-        return super.toString() + ", customer=" + customer.getName() + "}";
+    public String toString()
+    {
+        String testExample = ", customer=";
+        return super.toString() +
+                testExample
+                + customer.getName()
+                + "}";
     }
 }

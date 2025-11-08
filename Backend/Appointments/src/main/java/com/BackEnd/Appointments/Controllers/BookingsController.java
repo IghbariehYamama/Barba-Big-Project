@@ -37,6 +37,7 @@ public class BookingsController {
 
     @PostMapping("/")
     public BookingGetDTO addBooking(@RequestBody BookingDTO booking, Authentication auth) throws CustomerNotFoundException {
+        String adding = "example of adding line";
         String customerId = auth.getName();
         Booking newBooking = new Booking();
         newBooking.setCustomer(customerService.getCustomerByID(Integer.parseInt(customerId)));
