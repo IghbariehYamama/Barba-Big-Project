@@ -1,18 +1,20 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, Linking } from 'react-native'
+import { View, Text, TouchableOpacity, Image, FlatList, Linking } from 'react-native'
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { COLORS, SIZES, icons, images, socials, appServer } from '../constants'
+import { COLORS, icons, images, socials, appServer } from '../constants'
 import AutoSlider from '../components/AutoSlider';
 import { StatusBar } from 'expo-status-bar';
 import LinkItem from '../components/LinkItem';
 import SubHeaderItem from '../components/SubHeaderItem';
-import { specialists } from '../data';
 import SpecialistCard from '../components/SpecialistCard';
 import { TabSelection } from '../tabs';
 import { ScrollView } from 'react-native-virtualized-view';
 import RBSheet from "react-native-raw-bottom-sheet";
 import SocialIcon from '../components/SocialIcon';
-import { isTestMode, serverName } from '../constants/serverAPIS'
-import { SalonContext } from '../components/SalonContext'; // Adjust path
+import { isTestMode } from '../APIs/serverAPIS'
+import { SalonContext } from '../components/SalonContext';
+import { SalonDetailsAPIs as SalonDetailsAPI } from '../APIs/SalonDetailsAPIs' // Adjust path
+import styles from '../ScreensStyle/SalonDetailsStyle'
+
 
 const SalonDetails = ({ route, navigation }) => {
   const refRBSheet = useRef();
@@ -32,16 +34,13 @@ const SalonDetails = ({ route, navigation }) => {
         salonRating: "5.0",
         facebook: '',
         instagram: '',
-        waze: '',
         employees: []
       });
       setIsOpen(true);
     } else {
       const fetchSalonData = async () => {
         try {
-          const response = await fetch(`https://${appServer.serverName}/businesses/get/${route.params.salonID}`);
-          const data = await response.json();
-          console.log(data);
+          const data = await SalonDetailsAPI.fetchSalonDetails(route.params.salonID);
 
           setSalonInfo({
             salonID: route.params.salonID,
@@ -52,8 +51,10 @@ const SalonDetails = ({ route, navigation }) => {
             salonRating: data.rating,
             facebook: data.facebook,
             instagram: data.instagram,
-            waze: data.waze,
-            employees: data.employees
+            website: data.website,
+            employees: data.employees,
+            workingHours: data.workingHours,
+            coordinates: data.coordinates
           });
 
           if (data.workingHours && Array.isArray(data.workingHours)) {
@@ -98,8 +99,7 @@ const SalonDetails = ({ route, navigation }) => {
   useEffect(() => {
     const fetchSliderImages = async () => {
       try {
-        const response = await fetch(`https://${appServer.serverName}/businesses/photos/${route.params.salonID}/sliders/urls`);
-        const data = await response.json();
+        const data = await SalonDetailsAPI.fetchSliderImages(route.params.salonID);
         if (Array.isArray(data)) {
           const fullUrls = data.map(path => `https://${appServer.serverName}${path}`);
           setSliderImages(fullUrls);
@@ -208,8 +208,10 @@ const SalonDetails = ({ route, navigation }) => {
         </View>
 
         {/* More information links */}
-        <View style={styles.linkContainer}>
-          {/*
+
+          {(salonInfo.facebook || salonInfo.website || salonInfo.instagram || (salonInfo.coordinates.latitude && salonInfo.coordinates.longitude)) && (
+              <View style={styles.linkContainer}>
+                {/*
           <LinkItem
             name="Website"
             icon={icons.explore}
@@ -226,29 +228,49 @@ const SalonDetails = ({ route, navigation }) => {
             onPress={() => navigation.navigate("Call")}
           />
           */}
-          <LinkItem
-              name="Facebook"
-              icon={icons.facebook2}
-              onPress={() => Linking.openURL('https://facebook.com/Contour.Design.Studio')}
-          />
-          <LinkItem
-              name="Instagram"
-              icon={icons.instagram}
-              onPress={() => Linking.openURL('https://www.instagram.com/contourstudio?igsh=a2ttdWM2amZpM2M0')}
-          />
-          <LinkItem
-            name="Direction"
-            icon={icons.location2}
-            onPress={() => Linking.openURL('https://waze.com/ul/hsv8wxyts7')}
-          />
-          <LinkItem
-            name="Share"
-            icon={icons.send2}
-            onPress={() => refRBSheet.current.open()}
-          />
-        </View>
 
-        <View style={[styles.separateLine, {
+                {salonInfo.website ? (
+                    <LinkItem
+                        name="Website"
+                        icon={icons.explore}
+                        onPress={() => Linking.openURL(salonInfo.website)}
+                    />
+                ) : null}
+
+                {salonInfo.facebook ? (
+                    <LinkItem
+                        name="Facebook"
+                        icon={icons.facebook2}
+                        onPress={() => Linking.openURL(salonInfo.facebook)}
+                    />
+                ) : null}
+
+                {salonInfo.instagram ? (
+                    <LinkItem
+                        name="Instagram"
+                        icon={icons.instagram}
+                        onPress={() => Linking.openURL(salonInfo.instagram)}
+                    />
+                ) : null}
+
+                {(salonInfo.coordinates.latitude && salonInfo.coordinates.longitude) ? (
+                    <LinkItem
+                        name="Direction"
+                        icon={icons.location2}
+                        onPress={() => Linking.openURL(`waze://?ll=${salonInfo.coordinates.latitude},${salonInfo.coordinates.longitude}&navigate=yes"`)}
+                    />
+                ) : null}
+
+                <LinkItem
+                    name="Share"
+                    icon={icons.send2}
+                    onPress={() => refRBSheet.current.open()}
+                />
+              </View>
+          )}
+
+
+          <View style={[styles.separateLine, {
           backgroundColor: COLORS.grayscale200
         }]} />
 
@@ -374,109 +396,6 @@ const SalonDetails = ({ route, navigation }) => {
   )
 };
 
-const styles = StyleSheet.create({
-  area: {
-    flex: 1,
-    backgroundColor: COLORS.white
-  },
-  headerContainer: {
-    width: SIZES.width - 32,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    position: "absolute",
-    top: 32,
-    zIndex: 999,
-    left: 16,
-    right: 16
-  },
-  backIcon: {
-    width: 24,
-    height: 24,
-    tintColor: COLORS.white
-  },
-  bookmarkIcon: {
-    width: 24,
-    height: 24,
-    tintColor: COLORS.white
-  },
-  contentContainer: {
-    marginHorizontal: 16
-  },
-  salonHeaderContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginVertical: 12
-  },
-  salonName: {
-    fontSize: 24,
-    fontFamily: "bold",
-    color: COLORS.black,
-  },
-  salonBtn: {
-    width: 72,
-    height: 30,
-    borderRadius: 24,
-    backgroundColor: COLORS.primary,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  salonBtnText: {
-    fontSize: 14,
-    fontFamily: "medium",
-    color: COLORS.white,
-  },
-  salonItemContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  locationIcon: {
-    width: 14,
-    height: 14,
-    tintColor: COLORS.primary,
-    marginRight: 8
-  },
-  locationText: {
-    fontSize: 14,
-    fontFamily: "medium",
-    color: COLORS.grayscale700,
-  },
-  starMiddleIcon: {
-    width: 14,
-    height: 14,
-    tintColor: COLORS.primary,
-    marginRight: 8
-  },
-  starMiddleText: {
-    fontSize: 14,
-    fontFamily: "medium",
-    color: COLORS.grayscale700,
-  },
-  linkContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginVertical: 12
-  },
-  separateLine: {
-    width: SIZES.width - 32,
-    height: 1,
-    backgroundColor: COLORS.grayscale200
-  },
-  bottomTitle: {
-    fontSize: 24,
-    fontFamily: "semiBold",
-    color: COLORS.black,
-    textAlign: "center",
-    marginTop: 12
-  },
-  socialContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginVertical: 12,
-    width: SIZES.width - 32
-  }
-})
+
 
 export default SalonDetails

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, Alert, Modal, TouchableWithoutFeedback, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Alert, Modal, TouchableWithoutFeedback, FlatList } from 'react-native';
 import React, { useState } from 'react';
 import { COLORS, SIZES, icons } from '../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,6 +6,7 @@ import { ScrollView } from 'react-native-virtualized-view';
 import Barcode from '@kichiyaki/react-native-barcode-generator';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Clipboard from 'expo-clipboard';
+import styles from '../ScreensStyle/EReceiptStyle'
 
 const EReceipt = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -282,87 +283,5 @@ const EReceipt = ({ navigation }) => {
     </SafeAreaView>
   )
 };
-
-const styles = StyleSheet.create({
-  area: {
-    flex: 1,
-    backgroundColor: COLORS.white
-  },
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-    padding: 16
-  },
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingBottom: 16
-  },
-  scrollView: {
-    backgroundColor: COLORS.tertiaryWhite
-  },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center"
-  },
-  backIcon: {
-    height: 24,
-    width: 24,
-    tintColor: COLORS.black,
-    marginRight: 16
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontFamily: "bold",
-    color: COLORS.black
-  },
-  moreIcon: {
-    width: 24,
-    height: 24,
-    tintColor: COLORS.black
-  },
-  summaryContainer: {
-    width: SIZES.width - 32,
-    backgroundColor: COLORS.white,
-    alignItems: "center",
-    padding: 16,
-    marginVertical: 8
-  },
-  viewContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-    marginVertical: 12
-  },
-  viewLeft: {
-    fontSize: 12,
-    fontFamily: "regular",
-    color: "gray"
-  },
-  viewRight: {
-    fontSize: 14,
-    fontFamily: "medium",
-    color: COLORS.black
-  },
-  copyContentContainer: {
-    flexDirection: "row",
-    alignItems: "center"
-  },
-  statusBtn: {
-    width: 72,
-    height: 28,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.tansparentPrimary,
-    borderRadius: 6
-  },
-  statusBtnText: {
-    fontSize: 12,
-    fontFamily: "medium",
-    color: COLORS.primary
-  }
-})
 
 export default EReceipt

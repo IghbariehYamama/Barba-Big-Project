@@ -6,6 +6,7 @@ import { appServer, COLORS } from '../constants';
 import { OtpInput } from 'react-native-otp-entry';
 import Button from '../components/Button';
 import { customer } from '../data';
+import { OTPVerificationAPI } from '../APIs/OTPVerificationAPIs'
 
 const isTestMode = true;
 
@@ -34,14 +35,7 @@ const OTPVerification = ({ route, navigation }) => {
       if (login) {
 
         // Login verification
-        const loginCustomer = await fetch(`https://${appServer.serverName}/customers/signIn/phone/verify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phoneNumber: phoneNumber, code: codeEnter }),
-        });
-
-        if (loginCustomer.ok) {
-          const customerData = await loginCustomer.json();
+          const customerData = await OTPVerificationAPI.verifyLogin({ phoneNumber, code: codeEnter });
           customer.id = customerData.id;
           customer.email = customerData.email;
           customer.name = customerData.name;
@@ -50,22 +44,11 @@ const OTPVerification = ({ route, navigation }) => {
           customer.dateOfBirth = customerData.dateOfBirth;
           customer.verified = true;
           navigation.navigate('Main');
-        } else {
-          Alert.alert('Error', 'Failed to verify. Please try again.');
-        }
       } else {
-        // Signup verification
-        const checkResponse = await fetch(`https://${appServer.serverName}/customers/verify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phoneNumber: phoneNumber, code: codeEnter }),
-        });
 
-        if (!checkResponse.ok) {
-          Alert.alert('Expired/Invalid Code', 'Invalid or Expired Code, Please Try Again');
-        } else {
-          navigation.navigate('FillYourProfile', { phoneNumber: phoneNumber });
-        }
+        // Signup verification
+        await OTPVerificationAPI.verifySignup({ phoneNumber, code: codeEnter });
+        navigation.navigate('FillYourProfile', { phoneNumber: phoneNumber });
       }
     } catch (err) {
       Alert.alert('Error', err.message);
@@ -75,20 +58,10 @@ const OTPVerification = ({ route, navigation }) => {
   // Resend OTP Code
   const handleResendCode = async () => {
     try {
-      const resendResponse = await fetch(`https://${appServer.serverName}/customers/signIn/phone`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ phoneNumber: phoneNumber }),
-      });
-      if (resendResponse.ok) {
-        Alert.alert('Success', 'A new verification code has been sent.');
-        setTime(55); // Reset timer
-        setShowResendButton(false); // Hide the button
-      } else {
-        Alert.alert('Error', 'Failed to resend the code. Please try again.');
-      }
+      await OTPVerificationAPI.resendCode(phoneNumber);
+      Alert.alert('Success', 'A new verification code has been sent.');
+      setTime(55); // Reset timer
+      setShowResendButton(false); // Hide the button
     } catch (err) {
       Alert.alert('Error', err.message);
     }

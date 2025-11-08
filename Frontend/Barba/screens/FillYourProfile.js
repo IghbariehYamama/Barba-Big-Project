@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, ScrollView, Alert, Image, TouchableOpacity, Modal, TouchableWithoutFeedback, FlatList, TextInput } from 'react-native';
+import { View, Text, ScrollView, Alert, Image, TouchableOpacity, Modal, TouchableWithoutFeedback, FlatList, TextInput } from 'react-native';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
-import { COLORS, SIZES, FONTS, icons, appServer } from '../constants';
+import { COLORS, SIZES, icons } from '../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import { reducer } from '../utils/reducers/formReducers';
@@ -13,7 +13,9 @@ import DatePickerModal from '../components/DatePickerModal';
 import Button from '../components/Button';
 import { customer } from '../data/index';
 import { allcities } from '../data/allCities'
-
+import { Calendar } from 'react-native-calendars';
+import { FillYourProfileAPI } from '../APIs/FillYourProfileAPIs'
+import styles from '../ScreensStyle/FillYourProfileStyle'
 
 const isTestMode = false;
 
@@ -50,15 +52,42 @@ const FillYourProfile = ({ route, navigation }) => {
   const [selectedCity, setSelectedCity] = useState(null);
   const [cityDropdownVisible, setCityDropdownVisible] = useState(false);
   const { phoneNumber } = route.params;
+  const [isDateModalVisible, setDateModalVisible] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState(null);
+  const [calendarMode, setCalendarMode] = useState('day'); // 'day', 'month', or 'year'
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [calendarDate, setCalendarDate] = useState('');
+
+  useEffect(() => {
+    const dateStr = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-01`;
+    setCalendarDate(dateStr);
+  }, [selectedYear, selectedMonth]);
 
 
   const genders = ["MALE", "FEMALE"];
+
+  console.log('Date of birth:', dateOfBirth);
 
   const handleGenderSelect = (gender) => {
     setSelectedGender(gender);
     inputChangedHandler("gender", gender);
     setGenderDropdownVisible(false);
   };
+
+// Date formatting util
+  const formatDateToDisplay = (date) => {
+    // Ensure consistent formatting for display
+    const d = new Date(date);
+    return d.toISOString().split('T')[0]; // "YYYY-MM-DD"
+  };
+
+  useEffect(() => {
+    // Initialize selectedDate from formState
+    if (formState.inputValues.dateOfBirth) {
+      setSelectedDate(formatDateToDisplay(formState.inputValues.dateOfBirth));
+    }
+  }, []);
 
 
   const today = getFormatedDate(new Date(), 'YYYY-MM-DD'); // Or 'YYYY/MM/DD' based on library
@@ -334,47 +363,130 @@ const FillYourProfile = ({ route, navigation }) => {
                 </TouchableWithoutFeedback>
               </Modal>*/}
 
-              <View style={{
-                width: SIZES.width - 32
-              }}>
-                <TouchableOpacity
-                    style={styles.inputBtn}
-                    onPress={() => setOpenDatePicker(true)}>
-                  <Text style={styles.dateText}>{selectedDate || "Select Date of Birth"}</Text>
-                  <Feather name="calendar" size={24} color={COLORS.gray} />
+              <View style={{ width: SIZES.width - 32 }}>
+                <TouchableOpacity onPress={() => setDateModalVisible(true)} style={styles.datePicker}>
+                  <Text style={styles.datePickerText}>
+                    {dateOfBirth
+                        ? new Date(dateOfBirth).toLocaleDateString('en-GB') // dd/mm/yyyy format
+                        : "Choose Date of Birth"}
+                  </Text>
                 </TouchableOpacity>
               </View>
+
 
             </View>
           </ScrollView>
         </View>
-        <DatePickerModal
-            open={openDatePicker}
-            startDate={getFormatedDate(new Date('1900/01/01'), 'YYYY/MM/DD')}
-            selectedDate={selectedDate}
-            onClose={() => setOpenDatePicker(false)}
-            onChangeStartDate={(date) => {
-              const today = new Date();
-              const selected = new Date(date);
+        <Modal
+            visible={isDateModalVisible}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={() => setDateModalVisible(false)}
+        >
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 16, width: '90%' }}>
+              <TouchableOpacity onPress={() => {
+                if (calendarMode === 'day') setCalendarMode('month');
+                else if (calendarMode === 'month') setCalendarMode('year');
+              }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 10 }}>
+                  {calendarMode === 'day' && `${new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long' })} ${selectedYear}`}
+                  {calendarMode === 'month' && selectedYear}
+                  {calendarMode === 'year' && 'Select Year'}
+                </Text>
+              </TouchableOpacity>
 
-              if (selected > today) {
-                Alert.alert("Invalid Date", "You cannot select a future date.");
-              } else {
-                handleDateChange(date);
-              }
-            }}
-            minimumDate={getFormatedDate(new Date('1900/01/01'), 'YYYY/MM/DD')}
-            maximumDate={getFormatedDate(new Date(), 'YYYY/MM/DD')} // Disable future dates
-            options={{
-              textHeaderColor: COLORS.primary,
-              textSecondaryColor: COLORS.gray,
-              mainColor: COLORS.primary,
-              textDisabledColor: COLORS.gray, // Grey out future dates
-            }}
-            mode="calendar"
-        />
+              {/* Year Selector */}
+              {calendarMode === 'year' && (
+                  <FlatList
+                      data={Array.from({ length: new Date().getFullYear() - 1900 + 1 }, (_, i) => new Date().getFullYear() - i)} // descending
+                      keyExtractor={(item) => item.toString()}
+                      numColumns={3}
+                      contentContainerStyle={{ paddingVertical: 10 }}
+                      showsVerticalScrollIndicator={false}
+                      style={{ maxHeight: 300 }} // limit height
+                      renderItem={({ item: year }) => (
+                          <TouchableOpacity
+                              onPress={() => {
+                                setSelectedYear(year);
+                                setCalendarDate(`${year}-${String(selectedMonth + 1).padStart(2, '0')}-01`);
+                                setCalendarMode('month');
+                              }}
+
+                              style={{ flex: 1, margin: 6, alignItems: 'center', paddingVertical: 10, backgroundColor: '#f0f0f0', borderRadius: 8 }}
+                          >
+                            <Text style={{ fontSize: 16 }}>{year}</Text>
+                          </TouchableOpacity>
+                      )}
+                  />
+              )}
 
 
+              {calendarMode === 'month' && (
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                    {Array.from({ length: 12 }, (_, month) => (
+                        <TouchableOpacity
+                            key={month}
+                            onPress={() => {
+                              setSelectedMonth(month);
+                              setCalendarDate(`${selectedYear}-${String(month + 1).padStart(2, '0')}-01`);
+                              setCalendarMode('day');
+                            }}
+                            style={{ width: '30%', marginVertical: 8, alignItems: 'center' }}
+                        >
+                          <Text style={{ fontSize: 16 }}>
+                            {new Date(2020, month).toLocaleString('default', { month: 'short' })}
+                          </Text>
+                        </TouchableOpacity>
+                    ))}
+                  </View>
+              )}
+
+
+              {/* Day Selector (Calendar) */}
+              {calendarMode === 'day' && (
+                  <Calendar
+                      onDayPress={(day) => {
+                        setDateOfBirth(day.dateString);
+                        inputChangedHandler('dateOfBirth', day.dateString); // <-- ADD THIS LINE
+                        setDateModalVisible(false);
+                      }}
+
+                      key={`${selectedYear}-${selectedMonth}`}
+                      current={calendarDate}
+                      maxDate={new Date().toISOString().split('T')[0]}
+                      markedDates={{
+                        ...(dateOfBirth && {
+                          [dateOfBirth]: {
+                            selected: true,
+                            selectedColor: COLORS.primary,
+                            selectedTextColor: COLORS.white
+                          }
+                        })
+                      }}
+                      theme={{
+                        selectedDayBackgroundColor: COLORS.primary,
+                        todayTextColor: COLORS.primary,
+                        arrowColor: COLORS.primary,
+                      }}
+                      hideArrows={true}
+                      renderHeader={() => null}
+                      style={{ borderRadius: 12 }}
+                  />
+              )}
+
+              <TouchableOpacity
+                  style={{ marginTop: 16, alignSelf: 'flex-end' }}
+                  onPress={() => {
+                    setCalendarMode('day');
+                    setDateModalVisible(false);
+                  }}
+              >
+                <Text style={{ color: COLORS.primary, fontWeight: 'bold' }}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
 
 
         {RenderAreasCodesModal()}
@@ -399,272 +511,34 @@ const FillYourProfile = ({ route, navigation }) => {
                 }
 
                 try {
-                  console.log(dateOfBirth);
-                  const addCustomerResponse = await fetch(`https://${appServer.serverName}/customers/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      name,
-                      email,
-                      password,
-                      phone,
-                      dateOfBirth,
-                      gender
-                    }),
+                  const customerData = await FillYourProfileAPI.registerCustomer({
+                    name,
+                    email,
+                    password,
+                    phone: phoneNumber,
+                    dateOfBirth,
+                    gender
                   });
-                  const customerData = await addCustomerResponse.json();
-                  console.log(customerData);
-                  if (addCustomerResponse.ok) {
-                    customer.id = customerData;
-                    customer.email = email;
-                    customer.name = name;
-                    customer.phone = phoneNumber;
-                    customer.verified = true;
 
-                    Alert.alert("Success", "Profile created successfully!");
-                    navigation.navigate("Main");
-                  } else {
-                    Alert.alert("Error", "Failed to create profile. Please try again.");
-                  }
+                  customer.id = customerData;
+                  customer.email = email;
+                  customer.name = name;
+                  customer.phone = phoneNumber;
+                  customer.verified = true;
+
+                  Alert.alert("Success", "Profile created successfully!");
+                  navigation.navigate("Main");
+
                 } catch (error) {
                   Alert.alert("Error", "An error occurred while processing your request.");
                 }
               }}
+
           />
         </View>
       </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
-  area: {
-    flex: 1,
-    backgroundColor: COLORS.white
-  },
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: COLORS.white
-  },
-  avatarContainer: {
-    marginVertical: 12,
-    alignItems: "center",
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-  },
-  avatar: {
-    height: 130,
-    width: 130,
-    borderRadius: 65,
-  },
-  pickImage: {
-    height: 42,
-    width: 42,
-    borderRadius: 21,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    borderColor: COLORS.greyscale500,
-    borderWidth: .4,
-    borderRadius: 12,
-    height: 52,
-    width: SIZES.width - 32,
-    alignItems: 'center',
-    marginVertical: 12,
-    backgroundColor: COLORS.greyscale500,
-  },
-  downIcon: {
-    width: 10,
-    height: 10,
-    tintColor: "#111"
-  },
-  selectFlagContainer: {
-    width: 90,
-    height: 50,
-    marginHorizontal: 5,
-    flexDirection: "row",
-  },
-  flagIcon: {
-    width: 30,
-    height: 30
-  },
-  input: {
-    flex: 1,
-    marginVertical: 10,
-    height: 40,
-    fontSize: 14,
-    color: "#111"
-  },
-  inputBtn: {
-    borderWidth: 1,
-    borderRadius: 12,
-    borderColor: COLORS.greyscale500,
-    height: 52,
-    paddingLeft: 8,
-    fontSize: 18,
-    justifyContent: "space-between",
-    marginTop: 4,
-    backgroundColor: COLORS.greyscale500,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingRight: 8
-  },
-  rowContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  bottomContainer: {
-    position: "absolute",
-    bottom: 32,
-    right: 16,
-    left: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: SIZES.width - 32,
-    alignItems: "center"
-  },
-  continueButton: {
-    width: (SIZES.width - 32) - 8,
-    borderRadius: 32,
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary
-  },
-  closeBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 999,
-    backgroundColor: COLORS.white,
-    position: "absolute",
-    right: 16,
-    top: 32,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 9999
-  },
-  modalContainer: {
-    width: '80%',
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    shadowColor: '#000', // iOS shadow
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5, // Android shadow
-    alignItems: 'center',
-  },
-
-  dropdownHeader: {
-    marginBottom: 16,
-    fontSize: 18,
-    color: COLORS.black,
-    fontWeight: '600',
-  },
-
-  dropdownItem: {
-    width: '100%',
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.lightGray,
-    alignItems: 'center',
-  },
-
-  dropdownItemText: {
-    fontSize: 16,
-    color: COLORS.black,
-  },
-  label: {
-    fontSize: 16,
-    color: COLORS.black,
-    marginBottom: 4,
-  },
-
-  selectedDropdownItem: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 8,
-    paddingHorizontal: 20,
-  },
-
-  selectedDropdownText: {
-    color: COLORS.white,
-    fontWeight: 'bold',
-  },
-  genderSelector: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 12,
-    borderColor: COLORS.gray,
-    height: 52,
-    paddingHorizontal: 12,
-    backgroundColor: COLORS.greyscale500,
-  },
-
-  genderText: {
-    fontSize: 16,
-    color: COLORS.gray,
-  },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
-
-  genderModal: {
-    backgroundColor: COLORS.white,
-    paddingVertical: 20,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    alignItems: "center",
-    width: "100%",
-    paddingBottom: 30,
-  },
-
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: COLORS.black,
-    marginBottom: 16,
-  },
-
-  genderOptionsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-    width: "100%",
-    paddingHorizontal: 20,
-  },
-
-  genderOption: {
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    backgroundColor: COLORS.lightGray,
-    flexDirection: "row",
-    gap: 10,
-  },
-
-  selectedGenderOption: {
-    backgroundColor: COLORS.primary,
-  },
-
-  genderOptionText: {
-    fontSize: 16,
-    color: COLORS.black,
-    fontWeight: "bold",
-  },
-
-
-})
 
 export default FillYourProfile

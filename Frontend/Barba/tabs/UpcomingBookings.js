@@ -5,6 +5,7 @@ import { SIZES, COLORS, appServer, images } from '../constants'
 import RBSheet from "react-native-raw-bottom-sheet";
 import Button from '../components/Button';
 import { useNavigation } from '@react-navigation/native';
+import { UpcomingBookingsAPI } from '../APIs/UpcomingBookingsAPIs'
 
 const UpcomingBookings = ({ bookings }) => {
   const refRBSheet = useRef();
@@ -35,20 +36,10 @@ const UpcomingBookings = ({ bookings }) => {
             text: "Yes, Cancel",
             onPress: async () => {
               try {
-                let response = await fetch(`https://${appServer.serverName}/customers/bookings/status/cancel`, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify( bookingId ),
-                });
+                await UpcomingBookingsAPI.cancelBookingById(bookingId);
+                Alert.alert("Success", "Your booking has been successfully canceled.");
+                setUpcomingBookings((prevBookings) => prevBookings.filter((b) => b.id !== bookingId));
 
-                if (response.ok) {
-                  Alert.alert("Success", "Your booking has been successfully canceled.");
-                  setUpcomingBookings((prevBookings) => prevBookings.filter((b) => b.id !== bookingId));
-                } else {
-                  Alert.alert("Error", "Failed to cancel the booking. Please try again.");
-                }
               } catch (error) {
                 console.error("Failed to cancel booking:", error);
                 Alert.alert("Error", "An error occurred while canceling the booking.");
@@ -60,7 +51,7 @@ const UpcomingBookings = ({ bookings }) => {
   };
 
   return (
-    <View style={[styles.container, { 
+    <View style={[styles.container, {
       backgroundColor:COLORS.tertiaryWhite
     }]}>
       <FlatList
@@ -68,7 +59,7 @@ const UpcomingBookings = ({ bookings }) => {
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
-          <TouchableOpacity style={[styles.cardContainer, { 
+          <TouchableOpacity style={[styles.cardContainer, {
             backgroundColor: COLORS.white,
           }]}>
             <View style={styles.dateContainer}>
@@ -77,7 +68,7 @@ const UpcomingBookings = ({ bookings }) => {
                 {manualFormatDate(item.year, item.month, item.day, item.hour, item.minute)}
               </Text>
               <View style={styles.rightContainer}>
-                <Text style={[styles.remindMeText, { 
+                <Text style={[styles.remindMeText, {
                   color: COLORS.grayscale700,
                 }]}>Remind me</Text>
                 <Switch
@@ -90,7 +81,7 @@ const UpcomingBookings = ({ bookings }) => {
                 />
               </View>
             </View>
-            <View style={[styles.separateLine, { 
+            <View style={[styles.separateLine, {
               backgroundColor: COLORS.grayscale200,
             }]} />
             <View style={styles.detailsContainer}>
@@ -100,20 +91,20 @@ const UpcomingBookings = ({ bookings }) => {
                 style={styles.barberImage}
               />
               <View style={styles.detailsRightContainer}>
-                <Text style={[styles.name, { 
+                <Text style={[styles.name, {
                    color: COLORS.greyscale900
                 }]}>{item.business.name}</Text>
                 <Text style={[styles.serviceTitle, {
                   color: COLORS.grayscale700,
                 }]}>Employee:</Text>
                 <Text style={styles.serviceText}>{item.employee.name}</Text>
-                <Text style={[styles.serviceTitle, { 
+                <Text style={[styles.serviceTitle, {
                   color: COLORS.grayscale700,
                 }]}>Service:</Text>
                 <Text style={styles.serviceText}>{item.service.name}</Text>
               </View>
             </View>
-            <View style={[styles.separateLine, { 
+            <View style={[styles.separateLine, {
               marginVertical: 10,
               backgroundColor: COLORS.grayscale200,
               }]} />
@@ -123,7 +114,7 @@ const UpcomingBookings = ({ bookings }) => {
                   style={styles.cancelBtn}>
                 <Text style={styles.cancelBtnText}>Cancel Booking</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={()=>navigation.navigate("EReceipt", { bookingID: item.id })}
                 style={styles.receiptBtn}>
                 <Text style={styles.receiptBtnText}>View E-Receipt</Text>
@@ -157,15 +148,15 @@ const UpcomingBookings = ({ bookings }) => {
         <Text style={[styles.bottomSubtitle, {
           color: COLORS.red
         }]}>Cancel Booking</Text>
-        <View style={[styles.separateLine, { 
+        <View style={[styles.separateLine, {
            backgroundColor: COLORS.grayscale200,
         }]} />
 
         <View style={styles.selectedCancelContainer}>
-          <Text style={[styles.cancelTitle, { 
+          <Text style={[styles.cancelTitle, {
             color: COLORS.greyscale900
           }]}>Are you sure you want to cancel your barber/salon booking?</Text>
-          <Text style={[styles.cancelSubtitle, { 
+          <Text style={[styles.cancelSubtitle, {
             color: COLORS.grayscale700
           }]}>Only 80% of the money you can refund from your payment according to our policy.</Text>
         </View>
@@ -186,7 +177,7 @@ const UpcomingBookings = ({ bookings }) => {
             title="Yes, Cancel"
             filled
             style={styles.removeButton}
-            onPress={() => { 
+            onPress={() => {
               refRBSheet.current.close() ;
               navigation.navigate("CancelBooking") ;
             }}

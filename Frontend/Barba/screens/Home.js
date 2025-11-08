@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, FlatList } from 'react-native';
+import { View, Text, Image, TouchableOpacity, TextInput, FlatList } from 'react-native';
 import React, { useEffect, useState } from 'react'
 import { COLORS, SIZES, icons, images, appServer } from '../constants'
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,7 +7,8 @@ import { banners, categories, category, customer, mostPopularSalons } from '../d
 import Category from '../components/Category';
 import SubHeaderItem from '../components/SubHeaderItem';
 import SalonCard from '../components/SalonCard';
-import { serverName } from '../constants/serverAPIS'
+import { homeAPIs } from '../APIs/HomeAPIs';
+import styles from '../ScreensStyle/HomeStyle'
 
 const Home = ({ navigation }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -16,17 +17,23 @@ const Home = ({ navigation }) => {
     // Fetch salons nearby your location from API
     useEffect(() => {
         const fetchSalons = async () => {
-            try {
-                const response = await fetch(`https://${appServer.serverName}/businesses/all`);  // Replace with your API endpoint
-                const data = await response.json();
-                setSalonsNearbyYourLocation(data);  // Set fetched data
-            } catch (error) {
-                console.error("Error fetching salons:", error);
-            }
+            const salons = await homeAPIs.fetchAllSalons();
+
+            // 🔐 If images are private, fetch them securely
+            const salonsWithImages = await Promise.all(
+                salons.map(async (salon) => ({
+                    ...salon,
+                    imageUri: await homeAPIs.fetchProtectedSalonImage(salon.id),
+                }))
+            );
+
+            setSalonsNearbyYourLocation(salonsWithImages);
         };
 
         fetchSalons();
     }, []);
+
+
     const getGreeting = () => {
         const currentHour = new Date().getHours();
 
@@ -275,7 +282,7 @@ const Home = ({ navigation }) => {
               return (
                 <SalonCard
                   name={item.name}
-                  image={{ uri: `https://${serverName}/businesses/photos/${item.id}` }}
+                  image={{ uri: item.imageUri }}
                   category={item.category}
                   rating={item.rating}
                   location={item.location}
@@ -387,167 +394,5 @@ const Home = ({ navigation }) => {
   )
 };
 
-const styles = StyleSheet.create({
-  area: {
-    flex: 1,
-    backgroundColor: COLORS.white
-  },
-  container:{
-    flex: 1,
-    backgroundColor: COLORS.white,
-    padding: 16
-  },
-  headerContainer: {
-    flexDirection: "row",
-    width: SIZES.width - 32,
-    justifyContent: "space-between",
-    alignItems: "center"
-  },
-  userIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 32
-  },
-  viewLeft: {
-    flexDirection: "row",
-    alignItems: "center"
-  },
-  greeeting: {
-    fontSize: 12,
-    fontFamily: "regular",
-    color: "gray",
-    marginBottom: 4
-  },
-  title: {
-    fontSize: 20,
-    fontFamily: "bold",
-    color: COLORS.greyscale900
-  },
-  viewNameContainer: {
-    marginLeft: 12
-  },
-  viewRight: {
-    flexDirection: "row",
-    alignItems: "center"
-  },
-  bellIcon: {
-    height: 24,
-    width: 24,
-    tintColor: COLORS.black,
-    marginRight: 8
-  },
-  bookmarkIcon: {
-    height: 24,
-    width: 24,
-    tintColor: COLORS.black
-  },
-  searchBarContainer: {
-    width: SIZES.width - 32,
-    backgroundColor: COLORS.secondaryWhite,
-    padding: 16,
-    borderRadius: 12,
-    height: 52,
-    marginVertical: 16,
-    flexDirection: "row",
-    alignItems: "center"
-  },
-  searchIcon: {
-    height: 24,
-    width: 24,
-    tintColor: COLORS.gray
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    fontFamily: "regular",
-    marginHorizontal: 8
-  },
-  filterIcon: {
-    width: 24,
-    height: 24,
-    tintColor: COLORS.primary
-  },
-  bannerContainer: {
-    width :SIZES.width - 32,
-    height: 154 ,
-    paddingHorizontal: 28,
-    paddingTop: 28,
-    borderRadius: 32,
-    backgroundColor: COLORS.primary
-  },
-  bannerTopContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center"
-  },
-  bannerDicount: {
-    fontSize: 12,
-    fontFamily: "medium",
-    color: COLORS.white,
-    marginBottom: 4
-  },
-  bannerDiscountName: {
-    fontSize: 16,
-    fontFamily: "bold",
-    color: COLORS.white
-  },
-  bannerDiscountNum: {
-    fontSize: 46,
-    fontFamily: "bold",
-    color: COLORS.white
-  },
-  bannerBottomContainer: {
-    marginTop: 8
-  },
-  bannerBottomTitle: {
-    fontSize: 14,
-    fontFamily: "medium",
-    color: COLORS.white
-  },
-  bannerBottomSubtitle: {
-    fontSize: 14,
-    fontFamily: "medium",
-    color: COLORS.white,
-    marginTop: 4
-  },
-  mentorContainer: {
-    marginRight: 10,
-    alignItems: "center"
-  },
-  userAvatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 999
-  },
-  firstName: {
-    fontSize: 16,
-    fontFamily: "semiBold",
-    color: COLORS.dark2,
-    marginTop: 6
-  },
-  bannerItemContainer: {
-    width: "100%",
-    paddingBottom: 10,
-    backgroundColor: COLORS.primary,
-    height: 170,
-    borderRadius: 32,
-  },
-  dotContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#ccc',
-    marginHorizontal: 5,
-  },
-  activeDot: {
-    backgroundColor: COLORS.white,
-  }
-})
 
 export default Home

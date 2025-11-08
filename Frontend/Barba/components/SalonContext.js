@@ -11,8 +11,8 @@ export const SalonProvider = ({ children }) => {
         salonRating: '',
         facebook: '',
         instagram: '',
-        waze: '',
-        employees: []
+        employees: [],
+        coordinates: {}
     });
 
     return (

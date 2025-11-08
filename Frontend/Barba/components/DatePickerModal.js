@@ -1,66 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import DatePicker from "react-native-modern-datepicker";
+import DatePicker from 'react-native-date-picker';
 import { COLORS } from '../constants';
 
-const error = console.error;
-console.error = (...args) => {
-  if (/defaultProps/.test(args[0])) return;
-  error(...args);
-};
-
 const DatePickerModal = ({
-  open,
-  startDate,
-  selectedDate,
-  onClose,
-  onChangeStartDate,
-}) => {
-  const [selectedStartDate, setSelectedStartDate] = useState(selectedDate);
+                           open,
+                           startDate,
+                           selectedDate,
+                           onClose,
+                           onChangeStartDate,
+                         }) => {
+  const [selectedStartDate, setSelectedStartDate] = useState(new Date());
+
+  useEffect(() => {
+    if (selectedDate instanceof Date && !isNaN(selectedDate)) {
+      setSelectedStartDate(selectedDate);
+    } else if (selectedDate) {
+      const parsedDate = new Date(selectedDate);
+      if (!isNaN(parsedDate)) {
+        setSelectedStartDate(parsedDate);
+      }
+    }
+  }, [selectedDate]);
+
 
   const handleDateChange = (date) => {
     setSelectedStartDate(date);
     onChangeStartDate(date);
   };
 
-  const handleOnPressStartDate = () => {
-    onClose();
-  };
-
-  const modalVisible = open;
-
   return (
-    <Modal animationType="slide" transparent={true} visible={modalVisible}>
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <DatePicker
-              mode="calendar"
-              minimumDate={startDate}
-              maximumDate={new Date().toISOString().split("T")[0]} // Disables future dates
-              selected={selectedStartDate}
-              onDateChange={handleDateChange}
-              onSelectedChange={(date) => {
-                if (date <= new Date().toISOString().split("T")[0]) {
-                  setSelectedStartDate(date);
-                }
-              }}
-              options={{
-                backgroundColor: COLORS.primary,
-                textHeaderColor: COLORS.white,
-                textDefaultColor: '#FFFFFF',
-                selectedTextColor: COLORS.primary,
-                mainColor: COLORS.white,
-                textSecondaryColor: '#FFFFFF',
-                borderColor: COLORS.primary,
-              }}
-          />
+      <Modal animationType="slide" transparent={true} visible={open}>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <DatePicker
+                date={selectedStartDate}
+                mode="date"
+                minimumDate={startDate ? new Date(startDate) : undefined}
+                maximumDate={new Date()}
+                onDateChange={handleDateChange}
+            />
 
-          <TouchableOpacity onPress={handleOnPressStartDate}>
-            <Text style={{ color: 'white' }}>Close</Text>
-          </TouchableOpacity>
+            <TouchableOpacity onPress={onClose}>
+              <Text style={{ color: 'white', marginTop: 16 }}>Close</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </Modal>
+      </Modal>
   );
 };
 
@@ -79,15 +65,11 @@ const styles = StyleSheet.create({
     padding: 35,
     width: "90%",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
   },
 });
-
 
 export default DatePickerModal;

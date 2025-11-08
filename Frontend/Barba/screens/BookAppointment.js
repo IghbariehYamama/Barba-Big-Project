@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
-import { appServer, COLORS, SIZES } from '../constants';
+import { COLORS } from '../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import { ScrollView } from 'react-native-virtualized-view';
@@ -8,7 +8,9 @@ import { Calendar } from 'react-native-calendars';
 import Button from '../components/Button';
 import SpecialistCard from '../components/SpecialistCard';
 import { SalonContext } from '../components/SalonContext';
-import { specialists } from '../data'
+import { customer } from '../data'
+import { BookAppointmentAPI } from '../APIs/BookAppointmentAPIs'
+import styles from '../ScreensStyle/BookAppointmentStyle'
 
 const BookAppointment = ({ route, navigation }) => {
   const [availableSlots, setAvailableSlots] = useState([]);
@@ -32,14 +34,12 @@ const BookAppointment = ({ route, navigation }) => {
   }, [salonInfo.salonID, selectedMonth, selectedYear]);
 
 
-
   const fetchAvailableSlots = async (year, month) => {
     setMarkedDates({});
     setLoadingCalendar(true);
 
     try {
-      const res = await fetch(`https://${appServer.serverName}/businesses/business/${salonInfo.salonID}/available/slots/month/${year}/${month}`);
-      const data = await res.json();
+      const data = await BookAppointmentAPI.fetchAvailableSlots(salonInfo.salonID, year, month);
       setAvailableSlots(data);
 
       const dateMap = {};
@@ -92,10 +92,11 @@ const BookAppointment = ({ route, navigation }) => {
   };
 
   const onDayPress = (day) => {
-    const dateStr = day.dateString;
-    setSelectedDate(dateStr);
+    setSelectedDate(day);
     setSelectedHour(null);
     setSelectedSpecialist(null);
+    let dateStr = day.dateString;
+    console.log("dateStr: " + dateStr)
 
     // Update calendar marking
     const updatedMarks = {
@@ -132,8 +133,10 @@ const BookAppointment = ({ route, navigation }) => {
   };
 
   const handleHourSelect = (hour) => {
-    const slotForDate = availableSlots.find(slot => slot.date === selectedDate);
+    const slotForDate = availableSlots.find(slot => slot.date === selectedDate.dateString);
+    console.log(selectedDate.day)
     console.log(slotForDate)
+    console.log(availableSlots)
     if (!slotForDate) return;
 
     if (selectedHour === hour) {
@@ -186,7 +189,7 @@ const BookAppointment = ({ route, navigation }) => {
 
 
   const handleSelectSpecialist = (id) => {
-    const slotForDate = availableSlots.find(slot => slot.date === selectedDate);
+    const slotForDate = availableSlots.find(slot => slot.date === selectedDate.dateString);
     if (!slotForDate) return;
 
     if (selectedSpecialist === id) {
@@ -265,19 +268,20 @@ const BookAppointment = ({ route, navigation }) => {
   );
 
   const renderSpecialistCard = ({ item }) => {
-    if (!item) return null; // <- Prevent crashing on undefined item
+    if (!item || !salonInfo?.employees) return null;
 
-    const specialist = specialists.find(s => s.id.toString() === item.toString());
+    const specialist = salonInfo.employees.find(
+        (emp) => emp.id.toString() === item.toString()
+    );
 
-    if (!specialist) return null; // <- If no match, skip rendering
+    if (!specialist) return null;
 
     return (
         <SpecialistCard
             key={specialist.id}
             id={specialist.id}
             name={specialist.name}
-            avatar={specialist.avatar}
-            position={specialist.position}
+            position={specialist.position || 'Specialist'} // Adjust to actual key name
             onPress={handleSelectSpecialist}
             isSelected={selectedSpecialist === specialist.id}
         />
@@ -346,75 +350,29 @@ const BookAppointment = ({ route, navigation }) => {
               filled
               style={styles.button}
               onPress={() => {
-                navigation.navigate("ReviewSummary", {
+                const selectedEmployee = salonInfo?.employees?.find(
+                    (emp) => emp.id.toString() === selectedSpecialist?.toString()
+                );
+
+                navigation.navigate('ReviewSummary', {
                   date: selectedDate,
                   time: selectedHour,
-                  specialist: selectedSpecialist,
+                  salonName: salonInfo.salonName,
+                  businessId: salonInfo.salonID,
+                  salonAddress: salonInfo.salonLocation,
+                  customerName: customer.name,
+                  customerPhone: customer.phone,
+                  specialistName: selectedEmployee?.name || 'Unknown',
+                  employeeId: selectedSpecialist
                 });
               }}
           />
+
         </View>
       </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
-  area: {
-    flex: 1,
-    backgroundColor: COLORS.white
-  },
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-    padding: 16
-  },
-  title: {
-    fontSize: 16,
-    fontFamily: "bold",
-    color: COLORS.black
-  },
-  hourButton: {
-    padding: 10,
-    borderRadius: 32,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    marginHorizontal: 5,
-    backgroundColor: "transparent",
-  },
-  selectedHourButton: {
-    backgroundColor: COLORS.primary,
-  },
-  selectedHourText: {
-    fontSize: 12,
-    fontFamily: 'medium',
-    color: COLORS.white
-  },
-  hourText: {
-    fontSize: 12,
-    fontFamily: 'medium',
-    color: COLORS.primary
-  },
-  bottomContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    width: "100%",
-    height: 72,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    alignItems: "center",
-    backgroundColor: COLORS.white,
-    justifyContent: "center"
-  },
-  button: {
-    width: SIZES.width - 32,
-    height: 54,
-    borderRadius: 32,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.primary
-  }
-});
+
 
 export default BookAppointment;

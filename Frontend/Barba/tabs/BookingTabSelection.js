@@ -6,6 +6,7 @@ import CompletedBookings from './CompletedBookings';
 import CancelledBookings from './CancelledBookings';
 import { customer } from '../data'
 import {upcomingBookings} from '../data/index'
+import { BookingTabSelectionAPI } from '../APIs/BookingTabSelectionAPIs'
 
 
 const TabContent = ({ tab, bookings }) => {
@@ -42,25 +43,9 @@ const BookingTabSelection = () => {
     useEffect(() => {
         const fetchBookings = async () => {
             try {
-                const response = await fetch(
-                    `https://${appServer.serverName}/customers/get/bookings/all/${customer.id}`,
-                    {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log(data);
-                    setBookings(data); // Assuming data is an array of bookings
-                } else {
-                    Alert.alert(
-                        'Error',
-                        'Failed to fetch bookings. Please try again.'
-                    );
-                }
+                const data = await BookingTabSelectionAPI.fetchCustomerBookings();
+                console.log(data);
+                setBookings(data); // Assuming data is an array of bookings
             } catch (error) {
                 console.error('Failed to fetch bookings:', error);
                 Alert.alert(

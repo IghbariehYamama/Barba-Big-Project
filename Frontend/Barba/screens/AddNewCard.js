@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useReducer, useCallback, useEffect } from 'react';
 import { commonStyles } from '../styles/CommonStyles';
@@ -9,6 +9,7 @@ import { reducer } from '../utils/reducers/formReducers';
 import Button from '../components/Button';
 import Header from '../components/Header';
 import Card from '../components/Card';
+import styles from '../ScreensStyle/AddNewCardStyle'
 
 const initialState = {
   inputValues: {
@@ -129,16 +130,5 @@ const AddNewCard = ({ navigation }) => {
     </SafeAreaView>
   )
 };
-
-const styles = StyleSheet.create({
-  card: {
-    width: SIZES.width - 32,
-    borderRadius: 16,
-    marginVertical: 6
-  },
-  addBtn: {
-    borderRadius: 32
-  }
-})
 
 export default AddNewCard

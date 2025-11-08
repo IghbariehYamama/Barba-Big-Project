@@ -15,9 +15,9 @@ const SpecialistCard = ({ id, name, position, onPress, isSelected }) => {
         backgroundColor: COLORS.white,
       }]}>
         <Image
-            source={{uri: `https://${appServer.serverName}/businesses/photos/${salonInfo.salonID}/employees/${id}`}}
-          resizeMode='contain'
-          style={styles.avatar}
+            source={{uri: `https://${appServer.serverName}/images/${salonInfo.salonID}/employees/${id}`}}
+            resizeMode='contain'
+            style={styles.avatar}
         />
         <View style={styles.nameContainer}>
           <Text style={[styles.name, { 

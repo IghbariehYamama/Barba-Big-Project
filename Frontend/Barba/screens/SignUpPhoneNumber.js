@@ -6,7 +6,8 @@ import Header from '../components/Header';
 import Button from '../components/Button';
 import Checkbox from 'expo-checkbox'
 import Input from '../components/Input'
-import { isTestMode } from '../constants/serverAPIS'
+import { isTestMode } from '../APIs/serverAPIS'
+import { SignUpPhoneNumberAPI } from '../APIs/SignUpPhoneNumberAPIs';
 
 const SignUpPhoneNumber = ({ navigation }) => {
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -69,24 +70,16 @@ const SignUpPhoneNumber = ({ navigation }) => {
             try {
                 console.log("check5")
                 // Check if phone number exists
-                const checkResponse = await fetch(`https://${appServer.serverName}/customers/notExist`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ phoneNumber: phoneNumber }),
-                });
 
-                const checkResult = await checkResponse.json();
-                console.log(checkResult)
-                if (!checkResult) {
+                const checkResponse = await SignUpPhoneNumberAPI.sendPhoneNumberForSignInAPI(phoneNumber);
+                if (checkResponse) {
                     Alert.alert('Info', 'This phone number is already registered.');
                     return;
                 }
 
                 Alert.alert('Success', 'A verification code has been sent to your phone.');
                 setCodeSent(true);
-                navigation.navigate("OTPVerification", { phoneNumber: phoneNumber });
+                navigation.navigate("OTPVerification", { phoneNumber: phoneNumber, login: false });
 
             } catch (err) {
                 setError(err.message);

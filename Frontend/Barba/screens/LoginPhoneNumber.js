@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, Image, Alert, TouchableOpacity, Modal, TouchableWithoutFeedback, FlatList, TextInput } from 'react-native';
+import { View, Text, ScrollView, Image, Alert, TouchableOpacity, Modal, TouchableWithoutFeedback, FlatList, TextInput } from 'react-native';
 import React, { useCallback, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SIZES, images, appServer, icons } from '../constants'
@@ -7,7 +7,9 @@ import Button from '../components/Button';
 import { customer } from '../data/index';
 import Input from '../components/Input'
 import { useFocusEffect } from '@react-navigation/native'
-import { isTestMode } from '../constants/serverAPIS'
+import { isTestMode } from '../APIs/serverAPIS'
+import { LoginPhoneNumberAPI } from '../APIs/LoginPhoneNumberAPIs';
+import styles from '../ScreensStyle/LoginPhoneNumberStyle'
 
 const LoginPhoneNumber = ({ navigation }) => {
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -58,43 +60,28 @@ const LoginPhoneNumber = ({ navigation }) => {
 
     // Handle sending phone number to API
     const handleSendPhoneNumber = async () => {
-        console.log("check1");
-        if (isTestMode){
-            console.log("check2");
+        if (isTestMode) {
             navigation.navigate('Main');
+            return;
         }
-        else{
-            console.log("check3");
+
         if (!phoneNumber) {
-            console.log("check4");
             Alert.alert('Error', 'Please enter a valid phone number.');
             return;
         }
-            console.log("check5");
-        //const fullPhoneNumber = `${selectedArea.callingCode}${phoneNumber}`;
+
         try {
-            // Check if phone number exists
-
-            const checkResponse = await fetch(`https://${appServer.serverName}/customers/signIn/phone`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ phoneNumber: phoneNumber }),
-            });
-            if (!checkResponse.ok) {
-                Alert.alert('Info', 'This phone number is not registered.');
-                return;
-            }
-            Alert.alert('Success', checkResponse.body);
-
+            console.log("check 1")
+            console.log(phoneNumber)
+            await LoginPhoneNumberAPI.sendPhoneNumber(phoneNumber);
+            Alert.alert('Success', 'Verification code sent.');
             setCodeSent(true);
-            navigation.navigate("OTPVerification", { phoneNumber: phoneNumber, login: true });
-
+            navigation.navigate("OTPVerification", { phoneNumber, login: true });
         } catch (err) {
             setError(err.message);
         }
-    }};
+    };
+
 
     // Handle verifying the code
 
@@ -261,144 +248,5 @@ const LoginPhoneNumber = ({ navigation }) => {
 
     )
 };
-
-const styles = StyleSheet.create({
-    area: {
-        flex: 1,
-        backgroundColor: COLORS.white
-    },
-    container: {
-        flex: 1,
-        padding: 16,
-        backgroundColor: COLORS.white
-    },
-    logo: {
-        width: 100,
-        height: 100,
-        tintColor: COLORS.primary
-    },
-    logoContainer: {
-        alignItems: "center",
-        justifyContent: "center",
-        marginVertical: 32
-    },
-    title: {
-        fontSize: 26,
-        fontFamily: "semiBold",
-        color: COLORS.black,
-        textAlign: "center",
-        marginBottom: 22
-    },
-    center: {
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    checkBoxContainer: {
-        flexDirection: "row",
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginVertical: 18,
-    },
-    checkbox: {
-        marginRight: 8,
-        height: 16,
-        width: 16,
-        borderRadius: 4,
-        borderColor: COLORS.primary,
-        borderWidth: 2,
-    },
-    privacy: {
-        fontSize: 12,
-        fontFamily: "regular",
-        color: COLORS.black,
-    },
-    socialTitle: {
-        fontSize: 19.25,
-        fontFamily: "medium",
-        color: COLORS.black,
-        textAlign: "center",
-        marginVertical: 26
-    },
-    socialBtnContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    bottomLeft: {
-        fontSize: 14,
-        fontFamily: "regular",
-        color: "black"
-    },
-    bottomRight: {
-        fontSize: 16,
-        fontFamily: "medium",
-        color: COLORS.primary
-    },
-    button: {
-        marginVertical: 6,
-        width: SIZES.width - 32,
-        borderRadius: 30
-    },
-    forgotPasswordBtnText: {
-        fontSize: 16,
-        fontFamily: "semiBold",
-        color: COLORS.primary,
-        textAlign: "center",
-        marginTop: 12
-    },
-    inputContainer: {
-        flexDirection: "row",
-        borderColor: COLORS.greyscale500,
-        borderWidth: .4,
-        borderRadius: 6,
-        height: 58,
-        width: SIZES.width - 32,
-        alignItems: 'center',
-        marginVertical: 16,
-        backgroundColor: COLORS.greyscale500,
-    },
-    downIcon: {
-        width: 10,
-        height: 10,
-        tintColor: "#111"
-    },
-    selectFlagContainer: {
-        width: 90,
-        height: 50,
-        marginHorizontal: 5,
-        flexDirection: "row",
-    },
-    flagIcon: {
-        width: 30,
-        height: 30
-    },
-    input: {
-        flex: 1,
-        marginVertical: 10,
-        height: 40,
-        fontSize: 14,
-        color: "#111"
-    },
-    bottomContainer: {
-        position: "absolute",
-        bottom: 32,
-        left: 0,
-        right: 0,
-        alignItems: "center",
-    },
-    bottomTitle: {
-        fontSize: 12,
-        fontFamily: "regular",
-        color: COLORS.black,
-    },
-    bottomSubtitle: {
-        fontSize: 12,
-        fontFamily: "regular",
-        color: COLORS.black,
-        textDecorationLine: "underline",
-        marginTop: 2,
-    },
-});
 
 export default LoginPhoneNumber;

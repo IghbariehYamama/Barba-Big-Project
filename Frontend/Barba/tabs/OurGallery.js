@@ -17,7 +17,7 @@ const OurGallery = () => {
     useEffect(() => {
         const fetchOurGallery = async () => {
             try {
-                const response = await fetch(`https://${appServer.serverName}/businesses/photos/${salonInfo.salonID}/gallery/urls`);
+                const response = await fetch(`https://${appServer.serverName}/images/businesses/${salonInfo.salonID}/gallery/urls`);
                 const data = await response.json();
                 console.log("data: " + data)
                 console.log("salonInfo salonID: " + salonInfo.salonID)
