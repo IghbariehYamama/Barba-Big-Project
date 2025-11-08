@@ -92,23 +92,6 @@ public class CustomerService {
         this.bookingDAO.deleteBookingByCustomer(customer);
         this.customerRepository.deleteById(id);
     }
-
-    @Transactional
-    public Booking addBooking(Booking booking) {
-        if(!availableSlotRepository.existsByEmployeeIdAndSlot(booking.getEmployee().getId(),booking.getChosenBookingTime()))
-            throw new RuntimeException();
-        availableSlotRepository.deleteByEmployeeIdAndSlot(booking.getEmployee().getId(),booking.getChosenBookingTime());
-        return this.bookingDAO.save(booking);
-    }
-
-    @Transactional
-    public void deleteBooking(int id) {
-        this.bookingDAO.deleteById(id);
-    }
-    @Transactional
-    public Booking updateBooking(Booking booking) {
-        return this.bookingDAO.save(booking);
-    }
     @Transactional
     public List<Booking> getAllCustomerBookings(int customerId) {
         Customer customer = this.customerRepository.findById(customerId);

@@ -3,7 +3,7 @@ package com.BackEnd.Appointments.DTOs;
 import com.BackEnd.Appointments.Enums.BookingStatus;
 
 public class BookingStatusDTO {
-    private Integer bookingId;
+    private int bookingId;
     private BookingStatus bookingStatus;
     public BookingStatusDTO() {
 
@@ -12,7 +12,7 @@ public class BookingStatusDTO {
         this.bookingId = bookingId;
         this.bookingStatus = bookingStatus;
     }
-    public Integer getBookingId() {
+    public int getBookingId() {
         return bookingId;
     }
     public void setBookingId(Integer bookingId) {

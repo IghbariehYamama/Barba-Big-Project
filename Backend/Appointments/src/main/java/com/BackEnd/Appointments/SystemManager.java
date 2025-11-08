@@ -61,7 +61,7 @@ public class SystemManager {
         city.setBusinesses(new ArrayList<>());
         city.setName("Umm El Fahem");
         this.cityRepository.save(city);
-        Coordinates coordinates1 = new Coordinates(32.5153, 35.1521);
+        Coordinates coordinates1 = new Coordinates(32.108821, 34.803137);
         Business business = new Business(
                 "Barba",
                 new ArrayList<>(),
@@ -71,7 +71,7 @@ public class SystemManager {
                 null,
                 "0549778195",
                 "We are the best Barber Shop in the entire world.\nWe are waiting for you!\nCome Enjoy!",
-                "https://docs.google.com/document/d/1z2x-9u2cNngd3kIOc2zI5ukcQ3jx-52Uf6pez2VBa_8/edit?tab=t.0#heading=h.67yjym78o7pw",
+                "https://bellacurlshaircare.com/",
                 workingHoursList,
                 coordinates1);
         business.setBookmarks(new ArrayList<>());
@@ -246,12 +246,12 @@ public class SystemManager {
 
 // id = 1
         business.setName("Belle Curls");
-        business.setLocation("0093 Novic Parkway");
+        business.setLocation("Dr George Wise St 20, Tel Aviv-Yafo");
         business.setRating(4.5);
         business.setDistance("1.2 km");
-
         business.getCategories().add(haircut);
 
+        business.setInstagram("https://www.instagram.com/bellecurls.salon/");
         businessRepository.save(business);
 
 

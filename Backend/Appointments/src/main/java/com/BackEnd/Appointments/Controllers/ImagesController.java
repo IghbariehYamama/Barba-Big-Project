@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 
 @RestController
    @RequestMapping("/images")
-   public class ImageController {
+   public class ImagesController {
 
     @Autowired
     private BusinessService businessService;
@@ -77,6 +77,7 @@ import java.util.stream.Stream;
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
     @GetMapping("/{businessId}/sliders/urls")
     public ResponseEntity<List<String>> getSliderImageUrls(
             @PathVariable Long businessId,
@@ -156,7 +157,7 @@ import java.util.stream.Stream;
 
             List<String> urls = files
                     .filter(Files::isRegularFile)
-                    .map(p -> "/businesses/photos/" + businessId + "/gallery/" + p.getFileName().toString())
+                    .map(p -> "/images/businesses/" + businessId + "/gallery/" + p.getFileName().toString())
                     .toList();
             return ResponseEntity.ok(urls);
         } catch (IOException e) {
@@ -167,7 +168,6 @@ import java.util.stream.Stream;
     public ResponseEntity<byte[]> getGalleryImage(
             @PathVariable Long businessId,
             @PathVariable String filename) {
-
         Path imagePath = Paths.get("uploads/businesses/" + businessId + "/gallery", filename);
         return getImageResponse(imagePath); // your existing method
     }

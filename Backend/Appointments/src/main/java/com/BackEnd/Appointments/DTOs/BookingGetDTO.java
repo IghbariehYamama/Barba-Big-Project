@@ -11,7 +11,7 @@ public class BookingGetDTO {
     private Integer id;
     private BusinessNameDTO business;
     private ServiceNameDTO service;
-    private CustomerNameDTO customer;
+    private String customerName;
     private EmployeeNameDTO employee;
     private int hour;
     private int minute;
@@ -26,7 +26,7 @@ public class BookingGetDTO {
         this.id = id;
         this.business = new BusinessNameDTO(business.getId(), business.getName());
         this.service = new ServiceNameDTO(service.getId(),service.getName());
-        this.customer = new CustomerNameDTO(customer.getId(), customer.getName());
+        this.customerName = customer.getName();
         this.employee = new EmployeeNameDTO(employee.getId(), employee.getName());
         this.hour = chosenBookingTime.getHour();
         this.minute = chosenBookingTime.getMinute();
@@ -39,7 +39,7 @@ public class BookingGetDTO {
         this.id = booking.getId();
         this.business = new BusinessNameDTO(booking.getBusiness());
         this.service = new ServiceNameDTO(booking.getService());
-        this.customer = new CustomerNameDTO(booking.getCustomer());
+        this.customerName = booking.getCustomerName();
         this.employee = new EmployeeNameDTO(booking.getEmployee());
         this.hour = booking.getChosenBookingTime().getHour();
         this.minute = booking.getChosenBookingTime().getMinute();
@@ -78,14 +78,6 @@ public class BookingGetDTO {
 
     public void setService(ServiceNameDTO service) {
         this.service = service;
-    }
-
-    public CustomerNameDTO getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(CustomerNameDTO customer) {
-        this.customer = customer;
     }
 
     public EmployeeNameDTO getEmployee() {
@@ -142,5 +134,13 @@ public class BookingGetDTO {
 
     public void setStatus(BookingStatus status) {
         this.status = status;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
     }
 }

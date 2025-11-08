@@ -1,6 +1,7 @@
 package com.BackEnd.Appointments.Entities;
 
 import com.BackEnd.Appointments.Enums.Gender;
+import com.BackEnd.Appointments.Enums.Role;
 import com.BackEnd.Appointments.Utils.PasswordUtils;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;

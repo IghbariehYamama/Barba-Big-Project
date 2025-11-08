@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Future;
 
 import java.time.LocalDateTime;
 
@@ -32,6 +33,7 @@ public class AvailableSlot {
     private Employee employee;
 
     @Column(name = "slot")
+    @Future(message = "Date of available slot time must be in the future.")
     private LocalDateTime slot;
 
     public AvailableSlot() {

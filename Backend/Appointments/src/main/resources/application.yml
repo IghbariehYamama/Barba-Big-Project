@@ -1,0 +1,5 @@
+app:
+  jwt:
+    # 256-bit (32-byte) secret, Base64 or a long random string. Do NOT commit real secrets.
+    secret: ""
+    expiration-minutes: 60

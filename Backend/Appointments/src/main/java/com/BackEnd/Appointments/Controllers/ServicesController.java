@@ -7,5 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/services")
 @Validated
-public class ServiceController {
+public class ServicesController {
+
 }
