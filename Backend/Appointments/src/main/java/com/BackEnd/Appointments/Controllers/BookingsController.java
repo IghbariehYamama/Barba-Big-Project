@@ -34,8 +34,6 @@ public class BookingsController {
     private EmployeeRepository employeeRepository;
     @Autowired
     private ServiceManager serviceManager;
-    @Autowired
-    private JwtService jwtService;
 
     @PostMapping("/")
     public BookingGetDTO addBooking(@RequestBody BookingDTO booking, Authentication auth) throws CustomerNotFoundException {
